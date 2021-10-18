@@ -1,1 +1,1 @@
-# Card-Game
+# GWENT rip-off on blockchain 
