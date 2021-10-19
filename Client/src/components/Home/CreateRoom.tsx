@@ -35,30 +35,18 @@ const CreateRoom = () => {
 
     }
 
+    const handleClickOutside = (event: any) => {
+        if (ref.current === event.target) {
+            setShow(false);
+        }
+    };
 
-    // useEffect(() => {
-    //     const connectionOptions = {
-    //         "forceNew": true,
-    //         "reconnectionAttempts": "Infinity",
-    //         "timeout": 10000,
-    //         "transports": ["websocket"]
-    //     }
-
-    //     const socket = io("http://localhost:3000", {
-    //         reconnectionDelayMax: 10000,
-    //         auth: {
-    //             token: "123"
-    //         },
-    //         query: {
-    //             "my-key": "my-value"
-    //         }
-    //     });
-
-    //     socket.on("createNewGame", statusUpdate => {
-    //         console.log("A new game has been created! Username: " + statusUpdate.userName + ", Game id: " + statusUpdate.gameId + " Socket id: " + statusUpdate.mySocketId)
-
-    //     })
-    // }, [])
+    useEffect(() => {
+        const socket = io("http://localhost:3003");
+        //console.log(socket);
+        var account = walletState?.accounts[0];
+        socket.emit("first", account );
+    }, [walletState?.accounts]);
 
     return (
 
