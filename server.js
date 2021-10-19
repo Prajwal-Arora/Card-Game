@@ -5,8 +5,17 @@ const path = require('path');
 const mongoose = require('./database');
 
 const server = app.listen(port, () => console.log("Server listening on port " + port));
-const io = require("socket.io")(server, { pingTimeout: 60000 });
+const io = require("socket.io")(server, { 
+    cors: {
+        origin: "http://localhost:3000",
+        methods: ["GET", "POST"]
+    }
+});
 
 io.on("connection", socket => {
-    console.log('Connected!!');
+    console.log('Socket connected!!');
+
+    socket.on("first", data => {
+        console.log(data);
+    })
 })
