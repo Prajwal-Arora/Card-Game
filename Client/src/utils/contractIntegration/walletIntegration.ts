@@ -1,8 +1,7 @@
 import { useEffect } from "react";
-import { CombinedState, AnyAction, Dispatch } from "redux";
 import { ThunkDispatch } from "redux-thunk";
 import Web3 from "web3"
-import { setAccounts, setChainId, setConnected, setWeb3 } from "../../store/reducer/WalletReducer/walletReducer";
+import { setAccounts, setChainId, setConnected, setWeb3 } from "../../store/reducer/walletReducer";
 import { useAppDispatch } from "../../store/store";
 
 
@@ -81,7 +80,7 @@ export const fetchWallewPublicDataAsync = async (dispatch: any) => {
             dispatch(setConnected(false))
         }
     }
-    window.ethereum.on('accountsChanged', async (accounts: any) => {
+    window?.ethereum?.on('accountsChanged', async (accounts: any) => {
         if (!accounts[0]) {
             dispatch(setAccounts(accounts))
             dispatch(setConnected(false))

@@ -7,6 +7,10 @@ export interface walletDetail {
     isConnected?: boolean
 }
 
+export interface userDetail {
+    riskFactor?:''
+}
+
 
 
 export interface State {
