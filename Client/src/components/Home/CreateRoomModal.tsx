@@ -1,7 +1,11 @@
 import React from 'react'
 import { Button, Modal } from 'react-bootstrap'
 
-const CreateRoomModal = ({ show, handleClose, elementRef }: any) => {
+const CreateRoomModal = ({account, show, handleClose, elementRef }: any) => {
+
+    const handleCreateRoom=()=>{
+     console.log(account,"Account")   
+    }
 
     return (
 
@@ -21,7 +25,7 @@ const CreateRoomModal = ({ show, handleClose, elementRef }: any) => {
                            
                             <button className="mx-auto mt-4 custom-btn d-flex align-items-center">
                                 <div className="d-flex align-items-center position-relative">
-                                    <div>Create Room</div>
+                                    <div onClick={handleCreateRoom}>Create Room</div>
                                     <div className="position-absolute right-arrow-position">
                                         <img src="/images/right-arrow.png" alt="" className="w-50" />
                                     </div>

@@ -5,3 +5,17 @@
     color:#FFD12B;
     padding: 5px;
 }
+
+.card {
+    background-color: unset;
+}
+
+.risk-bg{
+    background: #0C0C0C;
+    border: 2px solid yellow;
+    border-radius: 14px;
+}
+
+.text-shadow{
+    text-shadow: 0px 0px 10px rgba(255, 122, 0, 0.5);
+}

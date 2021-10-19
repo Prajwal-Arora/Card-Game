@@ -1,10 +1,12 @@
 import { combineReducers } from "@reduxjs/toolkit";
-import walletReducer from "./reducer/WalletReducer/walletReducer";
+import userReducer from "./reducer/userReducer";
+import walletReducer from "./reducer/walletReducer";
 import { store } from "./store";
 
 
 const rootReducer = combineReducers({
     walletConnect: walletReducer,
+    userDetail:userReducer
 
 });
 

@@ -3,7 +3,6 @@ import { toast, ToastContainer } from 'react-toastify';
 import { io } from "socket.io-client";
 import Web3 from 'web3';
 import { useWalletDetail } from '../../store/hooks';
-import { setAccounts, setConnected, setWeb3 } from '../../store/reducer/WalletReducer/walletReducer';
 import { useAppDispatch, useAppSelector } from '../../store/store';
 import {  openMetamask } from '../../utils/contractIntegration/walletIntegration';
 import CreateRoomModal from './CreateRoomModal';
@@ -30,22 +29,11 @@ const CreateRoom = () => {
 
     const getConnection = async () => {
         const account=await openMetamask(dispatch)
-        toast("Wow so easy!");
+        if(account[0]){
+            toast("Connected to metamask");
+        }
 
     }
-    useEffect(() => {
-        document.addEventListener("click", handleClickOutside, false);
-        return () => {
-            document.removeEventListener("click", handleClickOutside, false);
-        };
-    }, []);
-
-
-    const handleClickOutside = (event: any) => {
-        if (ref.current === event.target) {
-            setShow(false);
-        }
-    };
 
 
     // useEffect(() => {
@@ -93,7 +81,7 @@ const CreateRoom = () => {
                     <div className="d-grid m-auto w-50">
                         <button onClick={() => handleShow()} className="custom-btn bg-green-500 px-8 py-2 focus:outline-none focus:ring-2 focus:ring-green-300  " id="modal">Create Room</button>
                         <button className="custom-btn mt-2 focus:outline-none focus:ring-2 focus:ring-green-300">Join Room</button>
-                        <CreateRoomModal elementRef={ref} show={show} handleClose={handleClose} />
+                        <CreateRoomModal account={walletState?.accounts[0]} elementRef={ref} show={show} handleClose={handleClose} />
 
                     </div>
                 )}
