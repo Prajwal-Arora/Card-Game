@@ -33,3 +33,8 @@
     align-items: center;
     height: 100%;
 }
+
+.userAddress{
+    width: 15%;
+    cursor: pointer;
+}

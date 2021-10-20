@@ -15,11 +15,11 @@ const WalletConnection = () => {
         <div className=" p-4">
             <div className="text-yellow text-xl flex items-center">
                 USERNAME
-                <span className="pl-2">
+                <span className="ml-2">
                     <img src="/images/down-arrow.png" alt="vector" className="w-2/3" />
                 </span>
             </div>
-            <div onClick={() => { copyToClipboard() }} className="cursor-pointer text-white text-lg">
+            <div onClick={() => { copyToClipboard() }} className="text-white text-lg userAddress">
                 {accountEllipsis ? accountEllipsis : 'Wallet address'}
             </div>
         </div>
