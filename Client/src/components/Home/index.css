@@ -9,9 +9,8 @@
     box-shadow: inset 0px 0px 15px #000000;
     border-radius: 8px;
     border: 1px solid yellow;
-    color:#474747
+    color: #474747 !important;
 }
-
 
 
 .right-arrow-position{

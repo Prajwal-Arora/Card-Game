@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import './App.css';
 import CreateRoom from './components/Home/CreateRoom';
+import JoinRoom from './components/Home/JoinRoom';
 import WalletConnection from './components/Home/WalletConnection';
 import Welcome from './components/Home/Welcome';
 import RiskFactor from './components/RiskFactor';
@@ -32,6 +33,9 @@ function App() {
         </Route>
         <Route path="/risk-factor" exact>
           <RiskFactor />
+        </Route>
+        <Route path="/join-room" exact>
+          <JoinRoom />
         </Route>
       </Switch>
     </Router>
