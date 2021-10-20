@@ -1,10 +1,12 @@
 import React from 'react'
 import { Button, Modal } from 'react-bootstrap'
+import { io } from 'socket.io-client';
 
-const CreateRoomModal = ({account, show, handleClose, elementRef }: any) => {
+const CreateRoomModal = ({account, socket, show, handleClose, elementRef }: any) => {
 
-    const handleCreateRoom=()=>{
-     console.log(account,"Account")   
+    const handleCreateRoom = () => {
+        console.log(account, "Account");
+        socket.emit("join room", account)
     }
 
     return (

@@ -22,6 +22,7 @@ const CreateRoom = () => {
     const walletState: any = useWalletDetail()
     const [show, setShow] = useState(false);
     const ref = useRef(null);
+    const [socketDetails, setSocket] = useState();
 
     const handleShow = () => setShow(true);
     const handleClose = () => setShow(false);
@@ -42,11 +43,9 @@ const CreateRoom = () => {
     };
 
     useEffect(() => {
-        const socket = io("http://localhost:3003");
-        //console.log(socket);
-        var account = walletState?.accounts[0];
-        socket.emit("first", account );
-    }, [walletState?.accounts]);
+        const socket:any = io("http://localhost:3003");
+        setSocket(socket);
+    }, []);
 
     return (
 
@@ -69,7 +68,7 @@ const CreateRoom = () => {
                     <div className="d-grid m-auto w-50">
                         <button onClick={() => handleShow()} className="custom-btn bg-green-500 px-8 py-2 focus:outline-none focus:ring-2 focus:ring-green-300  " id="modal">Create Room</button>
                         <button className="custom-btn mt-2 focus:outline-none focus:ring-2 focus:ring-green-300">Join Room</button>
-                        <CreateRoomModal account={walletState?.accounts[0]} elementRef={ref} show={show} handleClose={handleClose} />
+                        <CreateRoomModal socket={socketDetails} account={walletState?.accounts[0]} elementRef={ref} show={show} handleClose={handleClose} />
 
                     </div>
                 )}
