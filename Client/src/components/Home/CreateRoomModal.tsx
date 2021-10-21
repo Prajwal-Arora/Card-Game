@@ -21,7 +21,7 @@ const CreateRoomModal = ({account, socket, show, handleClose, elementRef }: any)
                             <input
                                 type="text"
                                 placeholder="Enter amount"
-                                className={`w-100 px-2 py-2 input-bg text-primary outline-none text-base font-light rounded-md`}
+                                className={`w-100 px-2 py-2 input-bg text-primary`}
                                 id="input"
                             />
                            

@@ -65,13 +65,11 @@ const RiskFactor = () => {
                     </Card>
                 </div>
                 <div className="mt-4 risk-bg w-50">
-                    <Card >
-                        <Card.Body>
-                            <Card.Title>Card Title</Card.Title>
-                            <Card.Text>
-                                Some quick example text to build on the card title and make up the bulk of
-                                the card's content.
-                            </Card.Text>
+                    <Card className="h-100">
+                        <Card.Body className="d-flex justify-content-center align-items-center">
+                            <div className="gradient-text text-Shadow">
+                                Waiting For Opponent
+                            </div>
                         </Card.Body>
                     </Card>
                 </div>
