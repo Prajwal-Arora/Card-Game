@@ -23,6 +23,7 @@ const CreateRoom = () => {
     const walletState: any = useWalletDetail()
     const [show, setShow] = useState(false);
     const ref = useRef(null);
+    const [socketDetails, setSocket] = useState();
 
     const handleShow = () => setShow(true);
     const handleClose = () => setShow(false);
