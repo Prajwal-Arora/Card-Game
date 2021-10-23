@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { toast } from "react-toastify";
 import { ThunkDispatch } from "redux-thunk";
 import Web3 from "web3"
 import { setAccounts, setChainId, setConnected, setWeb3 } from "../../store/reducer/walletReducer";
@@ -63,7 +63,7 @@ export const openMetamask = async (dispatch: any) => {
     return addresses.length ? addresses[0] : null;
 };
 
-export const fetchWallewPublicDataAsync = async (dispatch: any) => {
+export const fetchWalletPublicDataAsync = async (dispatch: any) => {
     window.web3 = new Web3(window.ethereum);
     const address = await getAccounts()
     const chainId = await getChainId()
@@ -89,3 +89,11 @@ export const fetchWallewPublicDataAsync = async (dispatch: any) => {
     getConnected()
 
 }
+
+
+    export const getConnection = async (dispatch: any) => {
+        const account = await openMetamask(dispatch)
+        if (account[0]) {
+            toast("Connected to metamask");
+        }
+    }

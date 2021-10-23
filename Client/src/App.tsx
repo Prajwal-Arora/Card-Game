@@ -7,18 +7,20 @@ import WalletConnection from './components/Home/WalletConnection';
 import Welcome from './components/Home/Welcome';
 import RiskFactor from './components/RiskFactor';
 import { useAppDispatch } from './store/store';
-import { fetchWallewPublicDataAsync } from './utils/contractIntegration/walletIntegration';
+import { fetchWalletPublicDataAsync } from './utils/contractIntegration/walletIntegration';
 
 function App() {
   const dispatch = useAppDispatch();
-
+ 
 
   useEffect(() => {
     const connect = async () => {
-      await fetchWallewPublicDataAsync(dispatch)
+      await fetchWalletPublicDataAsync(dispatch)
+      
     }
     connect()
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch])
 
   return (

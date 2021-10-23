@@ -15,7 +15,7 @@ const WalletConnection = () => {
         <div className=" p-4">
             <div className="text-yellow text-xl flex items-center">
                 USERNAME
-                <span className="ml-2">
+                <span className="mx-2">
                     <img src="/images/down-arrow.png" alt="vector" className="w-2/3" />
                 </span>
             </div>

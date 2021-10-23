@@ -1,8 +1,26 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { useUserDetail, useWalletDetail } from '../../store/hooks'
+import { useHistory } from "react-router-dom";
 import './index.css'
+import { End_point } from '../../utils/constant/Address';
+import { io } from 'socket.io-client';
+import { setSocket } from '../../store/reducer/userReducer';
+import { useAppDispatch } from '../../store/store';
+import { getConnection } from '../../utils/contractIntegration/walletIntegration';
+
+let socket:any
 
 const Welcome = () => {
+    const dispatch = useAppDispatch();
+    const walletState: any = useWalletDetail()
+    let history = useHistory();
+    const account=walletState?.accounts[0]
+
+    const onHandleContinue=()=>{
+        history.push("/create-room");
+    }
+
     return (
         <div style={{width:'34%'}} className="  py-4 m-auto">
             <div className="gradient-text welcome-txt text-uppercase">Welcome to vEmpire</div>
@@ -10,16 +28,22 @@ const Welcome = () => {
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
             </div>
             <div className=" d-flex justify-content-center">
-                <Link to="/create-room" className="text-decoration-none">
-                    <button className=" mt-3 custom-btn d-flex align-items-center">
+               
+                 { account?
+                   (<button onClick={()=> onHandleContinue()} className=" mt-3 custom-btn d-flex align-items-center">
                         <div className="d-flex align-items-center position-relative">
                             <div>Continue</div>
                             <div className="position-absolute right-arrow-position">
                                 <img src="/images/right-arrow.png" alt="" className="w-75" />
                             </div>
                         </div>
-                    </button>
-                </Link>
+                    </button>):
+                    (
+                        <button className=" mt-3 custom-btn d-flex align-items-center" onClick={() => getConnection(dispatch)}>
+                            Connect Wallet
+                        </button>
+                    )
+                }
 
             </div>
         </div>

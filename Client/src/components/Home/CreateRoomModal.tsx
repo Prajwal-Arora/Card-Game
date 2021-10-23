@@ -1,12 +1,12 @@
 import React from 'react'
 import { Button, Modal } from 'react-bootstrap'
 import { io } from 'socket.io-client';
+import { useAppSelector } from '../../store/store';
 
 const CreateRoomModal = ({account, socket, show, handleClose, elementRef }: any) => {
-
+    const detail = useAppSelector((state) => state?.userDetail)
     const handleCreateRoom = () => {
-        console.log(account, "Account");
-        socket.emit("join room", account)
+        console.log(detail, "Account");
     }
 
     return (
