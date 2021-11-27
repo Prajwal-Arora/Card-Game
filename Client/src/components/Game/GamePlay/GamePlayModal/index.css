@@ -1,0 +1,17 @@
+ .discarded-pile-modal {
+     padding: 24px 5px 40px;
+ }
+ 
+ .discarded-legion-radius {
+     cursor: pointer;
+     border-radius: 14px!important;
+ }
+ 
+ .cancel-btn {
+     background: #000!important;
+     padding: 5px 50px;
+     border-radius: 11px;
+     color: #FFD12B;
+     font-weight: bold;
+     border: 1px solid;
+ }

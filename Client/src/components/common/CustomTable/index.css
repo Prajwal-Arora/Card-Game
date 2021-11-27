@@ -1,0 +1,17 @@
+.battle-history-table .table>:not(caption)>*>* {
+    background-color: unset!important;
+    box-shadow: none!important;
+    border-bottom-width: 0px;
+}
+
+.battle-history-table .table>thead {
+    font-weight: 600;
+    border-bottom: 1px solid;
+    font-size: 20px;
+    color: #FFD12B;
+}
+
+.battle-history-table {
+    border: 1 px solid #FFD12B;
+    border-radius: 14px;
+}

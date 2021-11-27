@@ -1,9 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import Web3 from "web3";
+import { getLocalStore } from "../../common/localStorage";
 
 const initialState = {
     web3: {} as Web3,
-    accounts: [""],
+    accounts: getLocalStore('account'),
     chainId: '',
     isConnected: false
 };

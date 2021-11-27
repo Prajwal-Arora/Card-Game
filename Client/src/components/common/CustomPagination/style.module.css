@@ -1,0 +1,25 @@
+.paginationContainer {
+    display: flex;
+    justify-content: center;
+}
+
+.pageLimitSelect {
+    width: 100px;
+    margin-right: 10px;
+    height: 38px;
+}
+
+.paginationContainer .page-item a {
+    color: #000;
+}
+
+.paginationContainer .page-item .active>.page-link {
+    color: #fff;
+    background-color: yellow;
+    border-color: yellow;
+}
+
+.paginationContainer .pagination {
+    background-color: transparent;
+    font-size: 12px;
+}

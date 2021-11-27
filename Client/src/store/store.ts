@@ -1,5 +1,6 @@
 // import monitorReducersEnhancer from './enhancer/monitorReducer'
 // import loggerMiddleware from './middleware/logger'
+import thunk from "redux-thunk";
 import rootReducer from './combineReducer'
 
 import { configureStore } from "@reduxjs/toolkit";

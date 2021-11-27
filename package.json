@@ -4,7 +4,10 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "node server.js",
+    "client": "cd Client && npm start",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
   },
   "repository": {
     "type": "",
@@ -17,6 +20,7 @@
   },
   "homepage": "",
   "dependencies": {
+    "concurrently": "^6.3.0",
     "@socket.io/admin-ui": "^0.2.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",

@@ -1,15 +1,9 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
 import { useUserDetail, useWalletDetail } from '../../store/hooks'
 import { useHistory } from "react-router-dom";
 import './index.css'
-import { End_point } from '../../utils/constant/Address';
-import { io } from 'socket.io-client';
-import { setSocket } from '../../store/reducer/userReducer';
 import { useAppDispatch } from '../../store/store';
 import { getConnection } from '../../utils/contractIntegration/walletIntegration';
-
-let socket:any
 
 const Welcome = () => {
     const dispatch = useAppDispatch();
@@ -40,6 +34,7 @@ const Welcome = () => {
                     </button>):
                     (
                         <button className=" mt-3 custom-btn d-flex align-items-center" onClick={() => getConnection(dispatch)}>
+                            
                             Connect Wallet
                         </button>
                     )

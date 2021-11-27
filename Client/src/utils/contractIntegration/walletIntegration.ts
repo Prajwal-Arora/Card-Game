@@ -1,6 +1,7 @@
 import { toast } from "react-toastify";
 import { ThunkDispatch } from "redux-thunk";
 import Web3 from "web3"
+import { clearLocalStore, setLocalStore } from "../../common/localStorage";
 import { setAccounts, setChainId, setConnected, setWeb3 } from "../../store/reducer/walletReducer";
 import { useAppDispatch } from "../../store/store";
 
@@ -66,6 +67,7 @@ export const openMetamask = async (dispatch: any) => {
 export const fetchWalletPublicDataAsync = async (dispatch: any) => {
     window.web3 = new Web3(window.ethereum);
     const address = await getAccounts()
+    setLocalStore('account',address)
     const chainId = await getChainId()
 
 
@@ -81,15 +83,16 @@ export const fetchWalletPublicDataAsync = async (dispatch: any) => {
         }
     }
     window?.ethereum?.on('accountsChanged', async (accounts: any) => {
+        // dispatch(setAccounts(accounts))
         if (!accounts[0]) {
             dispatch(setAccounts(accounts))
             dispatch(setConnected(false))
+            clearLocalStore('account')
         }
     })
     getConnected()
 
 }
-
 
     export const getConnection = async (dispatch: any) => {
         const account = await openMetamask(dispatch)
