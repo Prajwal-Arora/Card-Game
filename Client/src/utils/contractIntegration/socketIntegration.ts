@@ -1,3 +1,4 @@
+import { toast } from "react-toastify";
 import { io } from "socket.io-client";
 import { setBattleArray, setSocket } from "../../store/reducer/userReducer";
 import { End_point } from "../constant/Address";
@@ -22,6 +23,8 @@ export const socketCreateIntegration = (
     xVemp: amount,
     team: teamSelect,
   };
+  socket.connect();
+  
   socket?.on("connect", () => {
     socket?.emit("createBattleRoom", JSON.stringify(payload), () => {
       console.log("!! we are in callback due to empty account !!");
@@ -39,10 +42,14 @@ export const socketCreateIntegration = (
 
 export const socketJoinIntegration = (
   dispatch: any,
-  options: { account?: any; onJoin?: Function } = {}
+  options: { account?: any; roomFilled?: any },
 ) => {
   socket = io(End_point, connectionOptions);
   dispatch(setSocket(socket));
+  const { account, roomFilled } = options;
+
+  socket.connect();
+
   socket?.on("connect", () => {
     socket?.emit("getArray");
   });
@@ -53,10 +60,11 @@ export const socketJoinIntegration = (
       (value: any) => value.player2 === ""
     );
     dispatch(setBattleArray(requiredBattleArray));
-    if (options.onJoin) {
-      options.onJoin();
-    }
   });
+  socket.on("roomFull",()=>{
+    toast("Room already full")
+    roomFilled()
+  })
 };
 
 export function isSocketIO(socket: any) {

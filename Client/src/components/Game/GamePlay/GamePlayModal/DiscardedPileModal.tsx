@@ -1,19 +1,60 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Modal } from 'react-bootstrap'
 import { useBattleDetail } from '../../../../store/hooks';
 import './index.css'
 
-const DiscardedPileModal = ({discardedPile,currentSelectedCard,handleChangeTurnCardEmit,openDiscardedPile,setOpenDiscardedPile, ownerAccount, account }: any) => {
-    
-    
+const DiscardedPileModal = ({legionData,discardedPile,currentSelectedCard,handleChangeTurnCardEmit,openDiscardedPile,setOpenDiscardedPile, ownerAccount, account }: any) => {
+    const [selectedCardVisibility, setSelectedCardVisibility] = useState<boolean>(false)
+    const [selectedCard, setSelectedCard] = useState<number[]>([])
+    const [selectedDiscardedCard, setSelectedDiscardedCard] = useState<[]>([])
 
-    const handleCancel=()=>{
-        setOpenDiscardedPile(false)
+    const cardSelect=(item:number)=>{
+        if(item!==undefined){
+            setSelectedCard((prev:number[])=>{
+                let newList= new Set(prev)
+                    if(newList.size<1){
+                        if(!newList.has(item)){
+                            newList.add(item)
+                        }
+                    }
+                    else{
+                        console.log("cannot select more that 1 cards")
+                    }
+                return Array.from(newList)
+            })  
+        }
     }
 
-    const handleDiscardedPile = (items: any) => {
-        const array = [currentSelectedCard, ownerAccount, account, items];
-        handleChangeTurnCardEmit(array)
+    const getCardImage=useCallback((card:any)=>{
+        if(selectedCard.includes(card.id) && selectedCardVisibility){
+            return card.battleCard
+        }
+        return '/images/blackCard.jpg'
+    },[selectedCardVisibility, selectedCard])
+    
+    const toggleSelection=(itemId:number,item:any)=>{
+        setSelectedCardVisibility(true)
+        if(!selectedCard.includes(itemId)){
+            setSelectedDiscardedCard(item)
+            cardSelect(itemId)
+        }
+    }
+
+
+    const handleDiscardedPile = () => {
+        if(currentSelectedCard.name==='Magnus'&& legionData.length!==0 ){
+            const array= [currentSelectedCard, ownerAccount, account, selectedDiscardedCard,legionData]
+            handleChangeTurnCardEmit(array)
+        }
+        else if(currentSelectedCard.name==='Magnus'&& legionData.length===0 ){
+            const array = [currentSelectedCard, ownerAccount, account, selectedDiscardedCard,{}];
+            handleChangeTurnCardEmit(array)
+        }
+        else{
+            const array = [currentSelectedCard, ownerAccount, account, selectedDiscardedCard];
+            handleChangeTurnCardEmit(array)
+        }
+        
         setOpenDiscardedPile(false)
     }
 
@@ -35,9 +76,9 @@ const DiscardedPileModal = ({discardedPile,currentSelectedCard,handleChangeTurnC
                                     >
                                         <img
                                             width="100%"
-                                            onClick={() => handleDiscardedPile(items)}
-                                            className={items?.active ? "active discarded-legion-radius font-weight-bold" : ""}
-                                            src={items.battleCard}
+                                            onClick={() => toggleSelection(items.id,items)}
+                                            className={`${selectedCard.includes(items.id)?  'active':''} discarded-legion-radius font-weight-bold`}
+                                            src={getCardImage(items)}
                                             alt="battle-cards"
                                         />
                                     </div>
@@ -47,11 +88,12 @@ const DiscardedPileModal = ({discardedPile,currentSelectedCard,handleChangeTurnC
                     </div>
                     <div className="d-flex justify-content-center">
                         <button
-                            onClick={handleCancel}
+                            onClick={handleDiscardedPile}
+                            disabled={selectedDiscardedCard.length===0}
                             className="mx-3 mt-4 cancel-btn  d-flex align-items-center"
                         >
                             <div className=" d-flex align-items-center position-relative">
-                                <div >Cancel</div>
+                                <div >Select</div>
                             </div>
                         </button>
 

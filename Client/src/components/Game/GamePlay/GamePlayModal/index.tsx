@@ -1,16 +1,82 @@
-import React from 'react'
-import DiscardedPileModal from './DiscardedPileModal'
-import RoundModal from './RoundModal'
-import WinnerUpdateModal from './WinnerUpdateModal'
+import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import DiscardedPileModal from "./DiscardedPileModal";
+import EmploratorsModal from "./ExploratorsModal";
+import LegionModal from "./LegionModal";
+import RoundModal from "./RoundModal";
 
-const GamePlayModal = ({legion,discardedPile,currentSelectedCard,handleChangeTurnCardEmit,setOpenLegion,openLegion,setOpenDiscardedPile,openDiscardedPile,ownerAccount, socket, account, gameWinner, round, winnerRound}:any) => {
-    return (
-        <>
-            <WinnerUpdateModal round={round} gameWinner={gameWinner} account={account} />
-            <RoundModal winnerRound={winnerRound} round={round} gameWinner={gameWinner} account={account} />
-            <DiscardedPileModal discardedPile={discardedPile} currentSelectedCard={currentSelectedCard} handleChangeTurnCardEmit={handleChangeTurnCardEmit} setOpenDiscardedPile={setOpenDiscardedPile} openDiscardedPile={openDiscardedPile} ownerAccount={ownerAccount} account={account}/>
-        </>
-    )
-    }
-    
-export default GamePlayModal
+const GamePlayModal = ({
+  roundModalDraw,
+  setIsDraw,
+  isDraw,
+  battleListOpponent,
+  setOpenExploratoryModal,
+  openExploratoryModal,
+  opponentPlayedDeck,
+  legion,
+  discardedPile,
+  currentSelectedCard,
+  handleChangeTurnCardEmit,
+  setOpenLegion,
+  openLegion,
+  setOpenDiscardedPile,
+  openDiscardedPile,
+  ownerAccount,
+  socket,
+  account,
+  gameWinner,
+  round,
+  winnerRound,
+}: any) => {
+  const [legionData, setLegionData] = useState<any>();
+  const [previousDiscardedPile, setPreviousDiscardedPile] = useState(0);
+
+
+  return (
+    <>
+      <RoundModal
+        roundModalDraw={roundModalDraw}
+        isDraw={isDraw}
+        winnerRound={winnerRound}
+        round={round}
+        gameWinner={gameWinner}
+        account={account}
+      />
+      <DiscardedPileModal
+        legionData={legionData}
+        discardedPile={discardedPile}
+        currentSelectedCard={currentSelectedCard}
+        handleChangeTurnCardEmit={handleChangeTurnCardEmit}
+        setOpenDiscardedPile={setOpenDiscardedPile}
+        openDiscardedPile={openDiscardedPile}
+        ownerAccount={ownerAccount}
+        account={account}
+      />
+      <LegionModal
+        socket={socket}
+        setIsDraw={setIsDraw}
+        isDraw={isDraw}
+        discardedPile={discardedPile}
+        setLegionData={setLegionData}
+        legion={legion}
+        currentSelectedCard={currentSelectedCard}
+        handleChangeTurnCardEmit={handleChangeTurnCardEmit}
+        ownerAccount={ownerAccount}
+        account={account}
+        setOpenLegion={setOpenLegion}
+        openLegion={openLegion}
+      />
+      <EmploratorsModal
+        currentSelectedCard={currentSelectedCard}
+        account={account}
+        handleChangeTurnCardEmit={handleChangeTurnCardEmit}
+        openExploratoryModal={openExploratoryModal}
+        ownerAccount={ownerAccount}
+        setOpenExploratoryModal={setOpenExploratoryModal}
+        battleListOpponent={battleListOpponent}
+      />
+    </>
+  );
+};
+
+export default GamePlayModal;

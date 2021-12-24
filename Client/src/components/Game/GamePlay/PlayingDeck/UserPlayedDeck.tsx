@@ -1,12 +1,19 @@
 import React, { useEffect, useState } from 'react'
-import { battleCardAbility, battleCardClasses } from '../../../../utils/BattleCardAbilities'
+import { useDispatch } from 'react-redux';
 
-const UserPlayedDeck = ({handleChangeTurnCardEmit, playedDeck, turn, setSelectedCardDeck, selectedCardDeck, ownerAccount, opponentPlayedDeck, currentSelectedCard, socket, account }: any) => {
-    
+const UserPlayedDeck = ({playTurnSound,handleChangeTurnCardEmit, playedDeck, turn, setSelectedCardDeck, selectedCardDeck, ownerAccount, opponentPlayedDeck, currentSelectedCard, socket, account }: any) => {
     const handlePlayedDeck = (item: any) => {
+        playTurnSound()
+        const arr = [currentSelectedCard, ownerAccount, account, item];
         if (currentSelectedCard.ability === 'Man_of_the_People') {
-            const arr = [currentSelectedCard, ownerAccount, account, item];
             handleChangeTurnCardEmit(arr)
+            setSelectedCardDeck(true)
+        }
+        if(currentSelectedCard.ability === 'Praetorian_Guard'){
+            const PGArr=[currentSelectedCard, ownerAccount, account, {}]
+            const lockArr=[ownerAccount,account,item]
+            socket.emit("lock", JSON.stringify(lockArr));
+            handleChangeTurnCardEmit(PGArr)
             setSelectedCardDeck(true)
         }
     }
@@ -32,7 +39,7 @@ const UserPlayedDeck = ({handleChangeTurnCardEmit, playedDeck, turn, setSelected
                             (<img
                                 width="70%"
                                 onClick={() => handlePlayedDeck(items)}
-                                className={currentSelectedCard.name === 'Consul' ? "border-style" : "border-style-not-allowed"}
+                                className={(currentSelectedCard.name === 'Consul' || currentSelectedCard.name === 'Praetorian_Guard' ) ? "border-style" : "border-style-not-allowed"}
                                 src={items.battleCard}
                                 alt="battle-cards"
                             />) : (

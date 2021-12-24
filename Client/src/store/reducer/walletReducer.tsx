@@ -6,7 +6,7 @@ const initialState = {
     web3: {} as Web3,
     accounts: getLocalStore('account'),
     chainId: '',
-    isConnected: false
+    isConnected: false,
 };
 
 export const commonSlice = createSlice({

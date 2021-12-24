@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Table } from "react-bootstrap";
+import InfiniteScroll from "react-infinite-scroll-component";
 import CustomPagination from "../CustomPagination";
 import { CustomPaginationProps } from "../CustomPagination/CustomPagination";
-import './index.css'
+import "./index.css";
 
 interface CustomTableProps {
   columns: {
@@ -39,15 +40,15 @@ const CustomTable = ({
   };
 
   return (
-    <div className="battle-history-table">
+    <div className="battle-history-table ">
       <Table responsive striped hover variant="dark" {...restProps}>
-        <thead>
+        {/* <thead className="t-head">
           <tr>
             {columns.map(({ key, label }) => {
               return <th key={key}>{label}</th>;
             })}
           </tr>
-        </thead>
+        </thead> */}
 
         <tbody>
           {rows.slice(0, limit).map((row: any) => {
@@ -57,20 +58,27 @@ const CustomTable = ({
                   if (render) {
                     return (
                       <td key={key}>
-                        <span className={"td-item  gradient-text "}>{render(row)}</span>
+                        <span className={"td-item  gradient-text "}>
+                          {render(row)}
+                        </span>
                       </td>
                     );
                   }
                   return (
-                    <td key={key}>
-                      <span className={"td-item  gradient-text "}>{row[key]} </span>
-                    </td>
+                    <>
+                      <td key={key}>
+                        <span className={"td-item  gradient-text "}>
+                          {row[key]}{" "}
+                        </span>
+                      </td>
+                    </>
                   );
                 })}
               </tr>
             );
           })}
         </tbody>
+        {/* </InfiniteScroll> */}
       </Table>
       {rows?.length === 0 ? (
         <p className="no-data-message">No Data Found</p>

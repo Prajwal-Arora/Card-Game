@@ -27,3 +27,4 @@ export const useBattleDetail = () => {
     
     return detail
 }
+

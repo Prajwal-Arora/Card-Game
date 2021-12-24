@@ -1,60 +1,81 @@
 .card-collection-container {
-    width: 90%!important;
-    margin: auto;
+  width: 90% !important;
+  margin: auto;
 }
 
 .battle-modal {
-    top: -50px;
-    text-align: initial;
-    background: #0C0C0C;
-    box-shadow: 0px 0px 20px rgba(255, 122, 0, 0.5);
-    border-radius: 0px 24px 24px 24px;
-    position: absolute;
-    width: 330px;
-    left: -75px;
-    z-index: 999;
-    padding: 10px;
-    border: 3px solid #FFD12B;
+  top: -50px;
+  text-align: initial;
+  background: #0c0c0c;
+  box-shadow: 0px 0px 20px rgba(255, 122, 0, 0.5);
+  border-radius: 0px 24px 24px 24px;
+  position: absolute;
+  width: 330px;
+  left: -75px;
+  z-index: 999;
+  padding: 10px;
+  border: 3px solid #ffd12b;
+}
+
+.card-row {
+  margin: 10px 14px;
+  flex: 0 0 15%;
+  flex-direction: row;
+  margin-right: -5px;
+  margin-bottom: 5px;
+  padding: -6%;
+}
+
+.bottom-card-row {
+  flex: 0 0 15%;
+  overflow: hidden;
+  transition: transform 0.2s ease;
 }
 
 .active {
-    box-shadow: 0px 0px 20px rgb(255 122 0 / 50%);
-    background: black;
-    border: 1px solid yellow!important;
-    border-radius: 30px;
+  box-shadow: 0px 0px 20px rgb(255 122 0 / 50%);
+  background: black;
+  border: 1px solid yellow !important;
+  border-radius: 30px;
 }
 
 .modal-font-weight {
-    font-weight: 200!important;
+  font-weight: 200 !important;
 }
 
 .hover-detail {
-    background: black;
-    position: absolute;
-    top: 22px;
-    border: 1px solid yellow;
-    color: white;
-    border-radius: 35px;
-    right: 20px;
-    width: 15px;
+  background: black;
+  position: absolute;
+  top: 22px;
+  border: 1px solid yellow;
+  color: white;
+  border-radius: 35px;
+  right: 20px;
+  width: 15px;
 }
 
 .card {
-    border: hidden;
+  border: hidden;
 }
 
 .waiting-opponent .modal {
-    overflow-y: hidden!important;
-    top: -10%!important;
+  overflow-y: hidden !important;
+  top: -10% !important;
 }
 
 .spinner-border {
-    position: absolute;
-    z-index: 10;
-    top: 10px;
-    right: 15%!important;
+  position: absolute;
+  z-index: 10;
+  top: 10px;
+  right: 15% !important;
 }
 
 .card-collection-container .modal {
-    top: -20%!important;
+  top: -20% !important;
+}
+
+.card-selection-txt {
+  font-size: 2vw;
+  width: 25% !important;
+  text-align: center;
 }

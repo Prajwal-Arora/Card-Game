@@ -8,10 +8,11 @@ const { instrument } = require('@socket.io/admin-ui');
 app.use(cors());
 
 const server = app.listen(port, () => console.log("Server listening on port " + port));
-const io = require("socket.io")(server, { 
+const io = require("socket.io")(server, {
     cors: {
-        origin: ["http://localhost:3000", "https://admin.socket.io/"]
-    }
+        origin: '*'
+    },
+    pingTimeout: 60000
 });
 
 const battleArray = [];
@@ -20,54 +21,92 @@ io.on("connection", socket => {
 
     // 1st on
     socket.on("createBattleRoom", (data, callback) => {
-        const payload = JSON.parse(data);
-        if(payload.p1 === '' || payload.xVemp === '') {
-            callback()
-            console.log('EMPTY ADDRESS OR XVEMP')
-        } else {
-            const {newBattle} = addBattle({
-                player1: payload.p1,
-                team1: payload.team,
-                player2: '',
-                xVempLocked: payload.xVemp,
-                risk1: '',
-                risk2: '',
-                legion1: [],
-                legion2: [],
-                cardsP1: [],
-                cardsP2: [],
-                score1: 0,
-                score2: 0,
-                playedCardsP1: [],
-                playedCardsP2: [],
-                discardedCards1: [],
-                discardedCards2: [],
-                turn: payload.p1,
-                winner_g: '',
-                winner_r1: '',
-                winner_r2: '',
-                roundP1: 1,
-                roundP2: 1
-            })
-            socket.join(payload.p1);
-            socket.emit("p1xObj", JSON.stringify(newBattle))
+        try {
+            const payload = JSON.parse(data);
+            if (payload.p1 === '' || payload.xVemp === '') {
+                callback()
+                console.log('EMPTY ADDRESS OR XVEMP')
+            } else {
+                const index = battleArray.findIndex(obj => obj.player1 === payload.p1);
+                if (index !== -1) {
+                    battleArray.splice(index, 1);
+                }
+                const { newBattle } = addBattle({
+                    player1: payload.p1,
+                    team1: payload.team,
+                    player2: '',
+                    xVempLocked: payload.xVemp,
+                    risk1: '',
+                    risk2: '',
+                    legion1: [],
+                    legion2: [],
+                    cardsP1: [],
+                    cardsP2: [],
+                    score1: 0,
+                    score2: 0,
+                    playedCardsP1: [],
+                    playedCardsP2: [],
+                    discardedCards1: [],
+                    discardedCards2: [],
+                    turn: payload.p1,
+                    winner_g: '',
+                    winner_r1: '',
+                    winner_r2: '',
+                    roundP1: 1,
+                    roundP2: 1,
+                    sudisRound: 0,
+                    sudisFlag1: 0,
+                    sudisFlag2: 0,
+                    auxFlag: 0
+                })
+                socket.join(payload.p1);
+                socket.emit("p1xObj", JSON.stringify(newBattle))
+            }
+        } catch (e) {
+            console.log(e);
         }
     })
 
     //2nd on
     socket.on("joinCreatedRooms", (data) => {
-        const payload = JSON.parse(data);
-        const index = battleArray.findIndex(obj => obj.player1 === payload.roomOwner);
-        battleArray[index].player2 = payload.client;
-        socket.join(payload.roomOwner);
-        io.in(payload.roomOwner).emit("p2Obj", JSON.stringify(battleArray[index]));
+        try {
+            const payload = JSON.parse(data);
+            const index = battleArray.findIndex(obj => obj.player1 === payload.roomOwner);
+            if (battleArray[index].player2 !== '') {
+                socket.emit("roomFull");
+                return;
+            }
+            battleArray[index].player2 = payload.client;
+            socket.join(payload.roomOwner);
+            io.in(payload.roomOwner).emit("p2Obj", JSON.stringify(battleArray[index]));
+        } catch (e) {
+            console.log(e);
+        }
     })
 
     //3rd on
     socket.on("clean", (data) => {
-        const index = battleArray.findIndex(obj => obj.player1 === data);
-        battleArray.splice(index, 1);
-        socket.emit("cleanedArray", JSON.stringify(battleArray))
+        try {
+            const array = JSON.parse(data);
+            const index = battleArray.findIndex(obj => obj.player1 === array[0]);
+            if (index === -1) {
+                return;
+            }
+
+            if (battleArray[index].player1 === array[1]) {
+                battleArray.splice(index, 1);
+                return;
+            }
+
+            if (battleArray[index].player2 === array[1]) {
+                battleArray[index].player2 = '';
+                battleArray[index].risk2 = '';
+                io.in(array[0]).emit("cleanedArray", JSON.stringify(battleArray[index]));
+                return;
+            }
+        } catch (e) {
+            console.log(e);
+        }
     })
 
     //4th on
@@ -77,193 +116,308 @@ io.on("connection", socket => {
 
     //5th on
     socket.on("riskButtonClick", data => {
-        const array = JSON.parse(data);
-        const index = battleArray.findIndex(obj => obj.player1 === array[0]);
-        if(battleArray[index].player1 === array[1]) {
-            battleArray[index].risk1 = array[2]
-        } else {
-            battleArray[index].risk2 = array[2]
+        try {
+            const array = JSON.parse(data);
+            const index = battleArray.findIndex(obj => obj.player1 === array[0]);
+            if (battleArray[index].player1 === array[1]) {
+                battleArray[index].risk1 = array[2]
+            } else {
+                battleArray[index].risk2 = array[2]
+            }
+            io.in(array[0]).emit("riskFactorChange", JSON.stringify(battleArray[index]));
+        } catch (e) {
+            console.log(e);
         }
-        io.in(array[0]).emit("riskFactorChange", JSON.stringify(battleArray[index]));
     })
 
     //6th on
     socket.on("cards-selected", data => {
-        const array = JSON.parse(data);
-        const index = battleArray.findIndex(obj => obj.player1 === array.owner);
-        if(battleArray[index].player1 === array.client) {
-            battleArray[index].cardsP1 = array.cards;
-        } else {
-            battleArray[index].cardsP2 = array.cards;
+        try {
+            const array = JSON.parse(data);
+            const index = battleArray.findIndex(obj => obj.player1 === array[0]);
+
+            if (battleArray[index].player1 === array[1]) {
+                battleArray[index].legion1 = array[2];
+                for (let i = 0; i < 10; i++) {
+                    let randomIndex = Math.floor(Math.random() * battleArray[index].legion1.length);
+                    battleArray[index].cardsP1.push(battleArray[index].legion1[randomIndex]);
+                    battleArray[index].legion1.splice(randomIndex, 1);
+                }
+                io.in(array[0]).emit("arrayWithCards", JSON.stringify(battleArray[index]));
+                return;
+            }
+            if (battleArray[index].player2 === array[1]) {
+                battleArray[index].legion2 = array[2];
+                for (let i = 0; i < 10; i++) {
+                    let randomIndex = Math.floor(Math.random() * battleArray[index].legion2.length);
+                    battleArray[index].cardsP2.push(battleArray[index].legion2[randomIndex]);
+                    battleArray[index].legion2.splice(randomIndex, 1);
+                }
+                io.in(array[0]).emit("arrayWithCards", JSON.stringify(battleArray[index]));
+                return;
+            }
+        } catch (e) {
+            console.log(e);
         }
-        io.in(array.owner).emit("arrayWithCards", JSON.stringify(battleArray[index]));
     })
 
     //7th on
     socket.on("cardClick", data => {
-        const array = JSON.parse(data);
-        const index = battleArray.findIndex(obj => obj.player1 === array[1]);
+        try {
+            const array = JSON.parse(data);
+            const index = battleArray.findIndex(obj => obj.player1 === array[1]);
 
-        if(battleArray[index].player1 === array[2]) {
+            if (battleArray[index].player1 === array[2]) {
 
-            // Universal Cards
+                let cardIndex = battleArray[index].cardsP1.findIndex(card => card.id === array[0].id);
 
-            const cardIndex = battleArray[index].cardsP1.findIndex(card => card.ability === array[0].ability);
+                if (array[0].ability === "Sudis") {
+                    battleArray[index].sudisFlag2 = 1;
+                    battleArray[index].sudisRound = battleArray[index].roundP1;
+                }
 
-            // Legionnaire ONLY
-            if (array[0].ability === "The_Machine") {
-                let updated = Legionnaire(cardIndex, array[3], array[0], battleArray[index].score1, battleArray[index].score2, battleArray[index].cardsP1, battleArray[index].playedCardsP1, battleArray[index].playedCardsP2, battleArray[index].discardedCards1, battleArray[index].discardedCards2);
+                if (battleArray[index].sudisFlag1 === 1 && battleArray[index].roundP1 === battleArray[index].sudisRound + 1 && battleArray[index].playedCardsP1.length === 0) {
+                    const playedCard = battleArray[index].cardsP1.splice(cardIndex, 1);
+                    battleArray[index].discardedCards1.push(playedCard[0]);
+                    battleArray[index].sudisFlag1 = 0;
+                    io.in(array[1]).emit("updater", JSON.stringify(battleArray[index]));
+                    return;
+                }
+
+                // magnus ONLY
+                if (array[0].ability === "Master_Spy") {
+                    let updated = magnus(cardIndex, array[4], array[3], array[0], battleArray[index].score1, battleArray[index].score2, battleArray[index].cardsP1, battleArray[index].playedCardsP1, battleArray[index].playedCardsP2, battleArray[index].discardedCards1, battleArray[index].discardedCards2, battleArray[index].legion1);
+                    battleArray[index].score1 = updated[0];
+                    battleArray[index].playedCardsP1 = (updated[2])
+                    battleArray[index].cardsP1 = updated[1];
+                    battleArray[index].legion1 = updated[7];
+                    battleArray[index].discardedCards1 = updated[4];
+
+                    io.in(array[1]).emit("updater", JSON.stringify(battleArray[index]));
+                    return;
+                }
+
+                // Challus ONLY
+                if (array[0].ability === "Rally") {
+                    let updated = challus(cardIndex, array[3], array[0], battleArray[index].score1, battleArray[index].score2, battleArray[index].cardsP1, battleArray[index].playedCardsP1, battleArray[index].playedCardsP2, battleArray[index].discardedCards1, battleArray[index].discardedCards2);
+                    battleArray[index].score1 = updated[0];
+                    battleArray[index].playedCardsP1 = (updated[2])
+                    battleArray[index].cardsP1 = updated[1];
+
+                    io.in(array[1]).emit("updater", JSON.stringify(battleArray[index]));
+                    return;
+                }
+
+                // julius ONLY
+                if (array[0].ability === "Strategist") {
+                    let updated = Julius(cardIndex, array[3], array[0], battleArray[index].score1, battleArray[index].score2, battleArray[index].cardsP1, battleArray[index].playedCardsP1, battleArray[index].playedCardsP2, battleArray[index].discardedCards1, battleArray[index].discardedCards2);
+                    battleArray[index].score1 = updated[0];
+                    battleArray[index].playedCardsP1 = (updated[2])
+                    battleArray[index].cardsP1 = updated[1];
+
+                    io.in(array[1]).emit("updater", JSON.stringify(battleArray[index]));
+                    return;
+                }
+
+                // after click
+                const playedCard = battleArray[index].cardsP1.splice(cardIndex, 1);
+                battleArray[index].playedCardsP1.push(playedCard[0]);
+
+                // AUX
+                if (Object.keys(array[3]).length !== 0 && array[3].ability === "Expendable") {
+                    let auxInDiscarded = battleArray[index].discardedCards2.filter(card => card.ability === "Expendable");
+                    if (battleArray[index].auxFlag === 0 && auxInDiscarded.length !== 0) {
+                        // prompt in UI auxilary discarded and brought back from discarded pile
+                        battleArray[index].score2 = battleArray[index].score2 + 2;
+                        battleArray[index].auxFlag === 1;
+                    } else {
+                        const itemIndex = battleArray[index].playedCardsP2.findIndex(card => card.id === array[3].id);
+                        battleArray[index].playedCardsP2.splice(itemIndex, 1);
+                        battleArray[index].discardedCards2.push(array[3]);
+                    }
+                }
+
+                // item empty checker
+                if (Object.keys(array[3]).length !== 0 && array[3].ability !== "Expendable" && array[0].ability !== "Ruthless_Tactics" && array[0].ability !== "Man_of_the_People" && array[0].ability !== "Diplomat" && array[0].ability !== "Reinforcements" && array[0].ability !== "Eyes_on_the_Prize") {
+                    const itemIndex = battleArray[index].playedCardsP2.findIndex(card => card.id === array[3].id);
+                    battleArray[index].playedCardsP2.splice(itemIndex, 1);
+                }
+
+                // after ability
+                let updated = Updater(array[3], array[0], battleArray[index].score1, battleArray[index].score2, battleArray[index].cardsP1, battleArray[index].playedCardsP1, battleArray[index].playedCardsP2, battleArray[index].discardedCards1, battleArray[index].discardedCards2, battleArray[index].legion1, battleArray[index].cardsP2);
                 battleArray[index].score1 = updated[0];
                 battleArray[index].playedCardsP1 = (updated[2])
                 battleArray[index].cardsP1 = updated[1];
+                battleArray[index].score2 = updated[6];
+                battleArray[index].discardedCards2 = updated[5];
+                battleArray[index].discardedCards1 = updated[4];
+                battleArray[index].legion1 = updated[7];
+                battleArray[index].cardsP2 = updated[8];
 
                 io.in(array[1]).emit("updater", JSON.stringify(battleArray[index]));
                 return;
             }
 
-            // Challus ONLY
-            if (array[0].ability === "Rally") {
-                let updated = challus(cardIndex, array[3], array[0], battleArray[index].score1, battleArray[index].score2, battleArray[index].cardsP1, battleArray[index].playedCardsP1, battleArray[index].playedCardsP2, battleArray[index].discardedCards1, battleArray[index].discardedCards2);
-                battleArray[index].score1 = updated[0];
-                battleArray[index].playedCardsP1 = (updated[2])
-                battleArray[index].cardsP1 = updated[1];
+            if (battleArray[index].player2 === array[2]) {
 
-                io.in(array[1]).emit("updater", JSON.stringify(battleArray[index]));
-                return;
-            }
+                let cardIndex = battleArray[index].cardsP2.findIndex(card => card.id === array[0].id);
 
-            // julius ONLY
-            if (array[0].ability === "Strategist") {
-                let updated = Julius(cardIndex, array[3], array[0], battleArray[index].score1, battleArray[index].score2, battleArray[index].cardsP1, battleArray[index].playedCardsP1, battleArray[index].playedCardsP2, battleArray[index].discardedCards1, battleArray[index].discardedCards2);
-                battleArray[index].score1 = updated[0];
-                battleArray[index].playedCardsP1 = (updated[2])
-                battleArray[index].cardsP1 = updated[1];
+                if (array[0].ability === "Sudis") {
+                    battleArray[index].sudisFlag1 = 1;
+                    battleArray[index].sudisRound = battleArray[index].roundP2;
+                }
 
-                io.in(array[1]).emit("updater", JSON.stringify(battleArray[index]));
-                return;
-            }
+                if (battleArray[index].sudisFlag2 === 1 && battleArray[index].roundP2 === battleArray[index].sudisRound + 1 && battleArray[index].playedCardsP2.length === 0) {
+                    const playedCard = battleArray[index].cardsP2.splice(cardIndex, 1);
+                    battleArray[index].discardedCards2.push(playedCard[0]);
+                    battleArray[index].sudisFlag2 = 0;
+                    io.in(array[1]).emit("updater", JSON.stringify(battleArray[index]));
+                    return;
+                }
 
-            // infantry ONLY
-            if (array[0].ability === "Morale_Boost") {
-                let updated = infantry(cardIndex, array[3], array[0], battleArray[index].score1, battleArray[index].score2, battleArray[index].cardsP1, battleArray[index].playedCardsP1, battleArray[index].playedCardsP2, battleArray[index].discardedCards1, battleArray[index].discardedCards2);
-                battleArray[index].score1 = updated[0];
-                battleArray[index].playedCardsP1 = (updated[2])
-                battleArray[index].cardsP1 = updated[1];
+                // magnus ONLY
+                if (array[0].ability === "Master_Spy") {
+                    let updated = magnus(cardIndex, array[4], array[3], array[0], battleArray[index].score2, battleArray[index].score1, battleArray[index].cardsP2, battleArray[index].playedCardsP2, battleArray[index].playedCardsP1, battleArray[index].discardedCards2, battleArray[index].discardedCards1, battleArray[index].legion2)
+                    battleArray[index].score2 = updated[0];
+                    battleArray[index].playedCardsP2 = (updated[2])
+                    battleArray[index].cardsP2 = updated[1];
+                    battleArray[index].legion2 = updated[7];
+                    battleArray[index].discardedCards2 = updated[4];
 
-                io.in(array[1]).emit("updater", JSON.stringify(battleArray[index]));
-                return;
-            }
+                    io.in(array[1]).emit("updater", JSON.stringify(battleArray[index]));
+                    return;
+                }
 
-            // after click
-            const playedCard = battleArray[index].cardsP1.splice(cardIndex, 1);
-            battleArray[index].playedCardsP1.push(playedCard[0]);
+                // Challus ONLY
+                if (array[0].ability === "Rally") {
+                    let updated = challus(cardIndex, array[3], array[0], battleArray[index].score2, battleArray[index].score1, battleArray[index].cardsP2, battleArray[index].playedCardsP2, battleArray[index].playedCardsP1, battleArray[index].discardedCards2, battleArray[index].discardedCards1)
+                    battleArray[index].score2 = updated[0];
+                    battleArray[index].playedCardsP2 = (updated[2])
+                    battleArray[index].cardsP2 = updated[1];
 
-            // item empty checker
-            if (Object.keys(array[3]).length !== 0 && array[0].ability !== "Ruthless_Tactics" && array[0].ability !== "Man_of_the_People" && array[0].ability !== "Eagle_Vision" && array[0].ability !== "Diplomat") {
-                const itemIndex = battleArray[index].playedCardsP2.findIndex(card => card.ability === array[3].ability);
-                battleArray[index].playedCardsP2.splice(itemIndex, 1);
-            }
+                    io.in(array[1]).emit("updater", JSON.stringify(battleArray[index]));
+                    return;
+                }
 
-            // after ability
-            let updated = Updater(array[3], array[0], battleArray[index].score1, battleArray[index].score2, battleArray[index].cardsP1, battleArray[index].playedCardsP1, battleArray[index].playedCardsP2, battleArray[index].discardedCards1, battleArray[index].discardedCards2);            
-            battleArray[index].score1 = updated[0];
-            battleArray[index].playedCardsP1 = (updated[2])
-            battleArray[index].cardsP1 = updated[1];
-            battleArray[index].score2 = updated[6];
-            battleArray[index].discardedCards2 = updated[5];
-            battleArray[index].discardedCards1 = updated[4];
+                // julius ONLY
+                if (array[0].ability === "Strategist") {
+                    let updated = Julius(cardIndex, array[3], array[0], battleArray[index].score2, battleArray[index].score1, battleArray[index].cardsP2, battleArray[index].playedCardsP2, battleArray[index].playedCardsP1, battleArray[index].discardedCards2, battleArray[index].discardedCards1)
+                    battleArray[index].score2 = updated[0];
+                    battleArray[index].playedCardsP2 = (updated[2])
+                    battleArray[index].cardsP2 = updated[1];
 
-        } else {
+                    io.in(array[1]).emit("updater", JSON.stringify(battleArray[index]));
+                    return;
+                }
 
-            // Universal Cards
+                // after click
+                const playedCard = battleArray[index].cardsP2.splice(cardIndex, 1);
+                battleArray[index].playedCardsP2.push(playedCard[0]);
 
-            const cardIndex = battleArray[index].cardsP2.findIndex(card => card.ability === array[0].ability);
+                // AUX
+                if (Object.keys(array[3]).length !== 0 && array[3].ability === "Expendable") {
+                    let auxInDiscarded = battleArray[index].discardedCards1.filter(card => card.ability === "Expendable");
+                    if (battleArray[index].auxFlag === 0 && auxInDiscarded.length !== 0) {
+                        // prompt in UI auxilary discarded and brought back from discarded pile
+                        battleArray[index].score1 = battleArray[index].score1 + 2;
+                        battleArray[index].auxFlag === 1;
+                    } else {
+                        const itemIndex = battleArray[index].playedCardsP1.findIndex(card => card.id === array[3].id);
+                        battleArray[index].playedCardsP1.splice(itemIndex, 1);
+                        battleArray[index].discardedCards1.push(array[3]);
+                    }
+                }
 
-            // Legionnaire ONLY
-            if (array[0].ability === "The_Machine") {
-                let updated = Legionnaire(cardIndex, array[3], array[0], battleArray[index].score2, battleArray[index].score1, battleArray[index].cardsP2, battleArray[index].playedCardsP2, battleArray[index].playedCardsP1, battleArray[index].discardedCards2, battleArray[index].discardedCards1)
+                // item empty checker 
+                if (Object.keys(array[3]).length !== 0 && array[3].ability !== "Expendable" && array[0].ability !== "Ruthless_Tactics" && array[0].ability !== "Man_of_the_People" && array[0].ability !== "Diplomat" && array[0].ability !== "Reinforcements" && array[0].ability !== "Eyes_on_the_Prize") {
+                    const itemIndex = battleArray[index].playedCardsP1.findIndex(card => card.id === array[3].id);
+                    battleArray[index].playedCardsP1.splice(itemIndex, 1);
+                }
+
+                // after ability
+                let updated = Updater(array[3], array[0], battleArray[index].score2, battleArray[index].score1, battleArray[index].cardsP2, battleArray[index].playedCardsP2, battleArray[index].playedCardsP1, battleArray[index].discardedCards2, battleArray[index].discardedCards1, battleArray[index].legion2, battleArray[index].cardsP1);
                 battleArray[index].score2 = updated[0];
-                battleArray[index].playedCardsP2 = (updated[2])
+                battleArray[index].playedCardsP2 = (updated[2]);
                 battleArray[index].cardsP2 = updated[1];
+                battleArray[index].score1 = updated[6];
+                battleArray[index].discardedCards1 = updated[5];
+                battleArray[index].discardedCards2 = updated[4];
+                battleArray[index].legion2 = updated[7];
+                battleArray[index].cardsP1 = updated[8];
 
                 io.in(array[1]).emit("updater", JSON.stringify(battleArray[index]));
                 return;
             }
-
-            // Challus ONLY
-            if (array[0].ability === "Rally") {
-                let updated = challus(cardIndex, array[3], array[0], battleArray[index].score2, battleArray[index].score1, battleArray[index].cardsP2, battleArray[index].playedCardsP2, battleArray[index].playedCardsP1, battleArray[index].discardedCards2, battleArray[index].discardedCards1)
-                battleArray[index].score2 = updated[0];
-                battleArray[index].playedCardsP2 = (updated[2])
-                battleArray[index].cardsP2 = updated[1];
-
-                io.in(array[1]).emit("updater", JSON.stringify(battleArray[index]));
-                return;
-            }
-
-            // julius ONLY
-            if (array[0].ability === "Strategist") {
-                let updated = Julius(cardIndex, array[3], array[0], battleArray[index].score2, battleArray[index].score1, battleArray[index].cardsP2, battleArray[index].playedCardsP2, battleArray[index].playedCardsP1, battleArray[index].discardedCards2, battleArray[index].discardedCards1)
-                battleArray[index].score2 = updated[0];
-                battleArray[index].playedCardsP2 = (updated[2])
-                battleArray[index].cardsP2 = updated[1];
-
-                io.in(array[1]).emit("updater", JSON.stringify(battleArray[index]));
-                return;
-            }
-
-            // infantry ONLY
-            if (array[0].ability === "Morale_Boost") {
-                let updated = infantry(cardIndex, array[3], array[0], battleArray[index].score2, battleArray[index].score1, battleArray[index].cardsP2, battleArray[index].playedCardsP2, battleArray[index].playedCardsP1, battleArray[index].discardedCards2, battleArray[index].discardedCards1)
-                battleArray[index].score2 = updated[0];
-                battleArray[index].playedCardsP2 = (updated[2])
-                battleArray[index].cardsP2 = updated[1];
-
-                io.in(array[1]).emit("updater", JSON.stringify(battleArray[index]));
-                return;
-            }
-
-            // after click
-            const playedCard = battleArray[index].cardsP2.splice(cardIndex, 1);
-            battleArray[index].playedCardsP2.push(playedCard[0]);
-
-            // item empty checker 
-            if (Object.keys(array[3]).length !== 0 && array[0].ability !== "Ruthless_Tactics" && array[0].ability !== "Man_of_the_People" && array[0].ability !== "Eagle_Vision" && array[0].ability !== "Diplomat") {
-                const itemIndex = battleArray[index].playedCardsP1.findIndex(card => card.ability === array[3].ability);
-                battleArray[index].playedCardsP1.splice(itemIndex, 1);
-            }
-
-            // after ability
-            let updated = Updater(array[3], array[0], battleArray[index].score2, battleArray[index].score1, battleArray[index].cardsP2, battleArray[index].playedCardsP2, battleArray[index].playedCardsP1, battleArray[index].discardedCards2, battleArray[index].discardedCards1);
-            battleArray[index].score2 = updated[0];
-            battleArray[index].playedCardsP2 = (updated[2]);
-            battleArray[index].cardsP2 = updated[1];
-            battleArray[index].score1 = updated[6];
-            battleArray[index].discardedCards1 = updated[5];
-            battleArray[index].discardedCards2 = updated[4];
+        } catch (e) {
+            console.log(e);
         }
+    })
 
-        io.in(array[1]).emit("updater", JSON.stringify(battleArray[index]));
+    //10th on
+    socket.on("lock", data => {
+        try {
+            const array = JSON.parse(data);
+            const index = battleArray.findIndex(obj => obj.player1 === array[0]);
+            if (battleArray[index].player1 === array[1]) {
+                let cardIndex = battleArray[index].playedCardsP1.findIndex(card => card.id === array[2].id);
+                battleArray[index].playedCardsP1[cardIndex].lock = true;
+                io.in(array[0]).emit("updater", JSON.stringify(battleArray[index]));
+                return;
+            }
+            if (battleArray[index].player2 === array[1]) {
+                let cardIndex = battleArray[index].playedCardsP2.findIndex(card => card.id === array[2].id);
+                battleArray[index].playedCardsP2[cardIndex].lock = true;
+                io.in(array[0]).emit("updater", JSON.stringify(battleArray[index]));
+                return;
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    })
 
+    //11th on
+    socket.on("unlock", data => {
+        try {
+            const array = JSON.parse(data);
+            const index = battleArray.findIndex(obj => obj.player1 === array[0]);
+            if (battleArray[index].player1 === array[1]) {
+                let cardIndex = battleArray[index].playedCardsP2.findIndex(card => card.id === array[2].id);
+                battleArray[index].playedCardsP2[cardIndex].lock = false;
+                io.in(array[0]).emit("updater", JSON.stringify(battleArray[index]));
+                return;
+            }
+            if (battleArray[index].player2 === array[1]) {
+                let cardIndex = battleArray[index].playedCardsP1.findIndex(card => card.id === array[2].id);
+                battleArray[index].playedCardsP1[cardIndex].lock = false;
+                io.in(array[0]).emit("updater", JSON.stringify(battleArray[index]));
+                return;
+            }
+        } catch (e) {
+            console.log(e);
+        }
     })
 
     //8th on
     socket.on("changeTurn", data => {
-        const array = JSON.parse(data);
-        const index = battleArray.findIndex(obj => obj.player1 === array[1]);
-        if(battleArray[index].player1 === array[2]) {
-            battleArray[index].turn = battleArray[index].player2;
-        } else {
-            battleArray[index].turn = battleArray[index].player1;
+        try {
+            const array = JSON.parse(data);
+            const index = battleArray.findIndex(obj => obj.player1 === array[1]);
+            if (battleArray[index].player1 === array[2]) {
+                battleArray[index].turn = battleArray[index].player2;
+            } else {
+                battleArray[index].turn = battleArray[index].player1;
+            }
+            io.in(array[1]).emit("turnChanged", JSON.stringify(battleArray[index]));
+        } catch (e) {
+            console.log(e);
         }
-        io.in(array[1]).emit("turnChanged", JSON.stringify(battleArray[index]));
     })
 
     //9th on
     socket.on("endClick", data => {
-        
-        const array = JSON.parse(data);
-        const index = battleArray.findIndex(obj => obj.player1 === array[0]);
+        try {
+            const array = JSON.parse(data);
+            const index = battleArray.findIndex(obj => obj.player1 === array[0]);
 
             // empty deck in round 1 declare winner
             if (battleArray[index].cardsP1.length === 0 && battleArray[index].roundP1 === 1 && battleArray[index].cardsP2.length !== 0) {
@@ -277,58 +431,49 @@ io.on("connection", socket => {
                 io.in(array[0]).emit("afterEnd", JSON.stringify(battleArray[index]));
                 return;
             }
-            
+
             // round +1
-            if(battleArray[index].player1 === array[1]) {
+            if (battleArray[index].player1 === array[1]) {
                 battleArray[index].roundP1 = battleArray[index].roundP1 + 1;
                 io.in(array[0]).emit("afterEnd", JSON.stringify(battleArray[index]));
             }
             // round +1
-            if(battleArray[index].player2 === array[1]) {
+            if (battleArray[index].player2 === array[1]) {
                 battleArray[index].roundP2 = battleArray[index].roundP2 + 1;
                 io.in(array[0]).emit("afterEnd", JSON.stringify(battleArray[index]));
             }
 
             // if in round 3 both press end
             if (battleArray[index].roundP1 === 4 && battleArray[index].roundP2 === 4) {
-                let winCount1 = 0;
-                let winCount2 = 0;
-                // check round 1 winner
-                if (battleArray[index].winner_r1 === battleArray[index].player1) {
-                    winCount1 = winCount1 + 1;
-                } else {
-                    winCount2 = winCount2 + 1;
+
+                // if match draw
+                if (battleArray[index].score1 === battleArray[index].score2) {
+                    battleArray[index].playedCardsP2 = [];
+                    battleArray[index].score2 = 0;
+                    battleArray[index].playedCardsP1 = [];
+                    battleArray[index].score1 = 0;
+                    io.in(array[0]).emit("draw", JSON.stringify(battleArray[index]));
+                    return;
                 }
-                // check round 2 winner
-                if (battleArray[index].winner_r2 === battleArray[index].player1) {
-                    winCount1 = winCount1 + 1;
-                } else {
-                    winCount2 = winCount2 + 1;
-                }
+
                 // check round 3 winner
                 if (battleArray[index].score1 > battleArray[index].score2) {
-                    winCount1 = winCount1 + 1;
-                } else {
-                    winCount2 = winCount2 + 1;
-                }
-                // declare game winnner
-                if (winCount1 > winCount2) {
                     battleArray[index].winner_g = battleArray[index].player1;
-                } else {
-                    battleArray[index].winner_g = battleArray[index].player2;
+                    io.in(array[0]).emit("afterEnd", JSON.stringify(battleArray[index]));
+                    return;
                 }
-                io.in(array[0]).emit("afterEnd", JSON.stringify(battleArray[index]));
-                return;
+
+                // check round 3 winner
+                if (battleArray[index].score2 > battleArray[index].score1) {
+                    battleArray[index].winner_g = battleArray[index].player2;
+                    io.in(array[0]).emit("afterEnd", JSON.stringify(battleArray[index]));
+                    return;
+                }
             }
 
-            // in second round both empty decks or single empty deck
-            if (battleArray[index].roundP1 === 3 && battleArray[index].roundP2 === 3 && battleArray[index].cardsP1.length === 0 || battleArray[index].cardsP2.length === 0) {
-                console.log("------TEST------")
-                return;
-            }
-            
-            // when roundp1 = roundp2 (2 is for r1 , 3 is for r2) both press end
+            // ************** roundp1 = roundp2 (2 is for r1 , 3 is for r2) both press end **************
             if (battleArray[index].roundP1 === battleArray[index].roundP2) {
+
                 // check round winner
                 if (battleArray[index].score1 > battleArray[index].score2) {
                     if (battleArray[index].winner_r1 === '') {
@@ -336,19 +481,13 @@ io.on("connection", socket => {
                     } else {
                         battleArray[index].winner_r2 = battleArray[index].player1;
                     }
-                } else {
+                }
+                if (battleArray[index].score2 > battleArray[index].score1) {
                     if (battleArray[index].winner_r1 === '') {
                         battleArray[index].winner_r1 = battleArray[index].player2;
                     } else {
                         battleArray[index].winner_r2 = battleArray[index].player2;
                     }
-                }
-
-                // both have empty deck after 1st round
-                if (battleArray[index].cardsP1.length === 0 && battleArray[index].cardsP2.length === 0 && battleArray[index].roundP1 === 2 && battleArray[index].roundP2 === 2) {
-                    battleArray[index].winner_g = battleArray[index].winner_r1;
-                    io.in(array[0]).emit("afterEnd", JSON.stringify(battleArray[index]));
-                    return;
                 }
 
                 // winner 1 and winner 2 are same after round 2
@@ -357,113 +496,271 @@ io.on("connection", socket => {
                     io.in(array[0]).emit("afterEnd", JSON.stringify(battleArray[index]));
                     return;
                 }
+
+                // will only enter here after round 2 end (3-3) //////////////////////////
+                if (battleArray[index].cardsP1.length === 0 || battleArray[index].cardsP2.length === 0) {
+
+                    if (battleArray[index].cardsP1.length === 0 && battleArray[index].cardsP2.length !== 0) {
+                        battleArray[index].winner_g = battleArray[index].player2;
+                        io.in(array[0]).emit("afterEnd", JSON.stringify(battleArray[index]));
+                        return;
+                    }
+
+                    if (battleArray[index].cardsP2.length === 0 && battleArray[index].cardsP1.length !== 0) {
+                        battleArray[index].winner_g = battleArray[index].player1;
+                        io.in(array[0]).emit("afterEnd", JSON.stringify(battleArray[index]));
+                        return;
+                    }
+
+                    if (battleArray[index].cardsP2.length === 0 && battleArray[index].cardsP1.length === 0) {
+                        battleArray[index].playedCardsP2 = [];
+                        battleArray[index].score2 = 0;
+                        battleArray[index].playedCardsP1 = [];
+                        battleArray[index].score1 = 0;
+                        io.in(array[0]).emit("draw", JSON.stringify(battleArray[index]));
+                        return;
+                    }
+                }
+                ////////////////////////////////////////////////////////////
+
                 //score reset deck reset
                 battleArray[index].score1 = 0;
                 battleArray[index].score2 = 0;
+                battleArray[index].auxFlag = 0;
 
-                // mercenary ability 1
-                let checkMercInDeck1 = battleArray[index].playedCardsP1.filter(card => card.ability === "Bought_and_Paid_For");
+                // t1 - remus | t2 - romulus 
+                if (battleArray[index].team1 === "Remus") {
 
-                if (battleArray[index].roundP1 === 2 || battleArray[index].roundP2 === 2) {
+                    let mercInDeck = battleArray[index].playedCardsP1.filter(card => card.ability === "Bought_and_Paid_For");
 
-                    if (checkMercInDeck1.length !== 0 && battleArray[index].winner_r1 === battleArray[index].player1) {
-                        battleArray[index].playedCardsP1.forEach((cards) => {
-                            if (cards.ability === "Bought_and_Paid_For") {
-                                return;
-                            }
-                            battleArray[index].discardedCards1.push(cards);
-                        })
-                        battleArray[index].playedCardsP1 = checkMercInDeck1;
-                        battleArray[index].score1 = checkMercInDeck1.length * 4;
-                    } else {
-                        battleArray[index].playedCardsP1.forEach((cards) => {
-                            battleArray[index].discardedCards1.push(cards);
-                        })
-                        battleArray[index].playedCardsP1 = [];
-                    }
-                }
-                if (battleArray[index].roundP1 === 3 || battleArray[index].roundP2 === 3) {
+                    // for round 2
+                    if (battleArray[index].roundP1 === 2) {
 
-                    if (checkMercInDeck1.length !== 0 && battleArray[index].winner_r2 === battleArray[index].player1) {
-                        battleArray[index].playedCardsP1.forEach((cards) => {
-                            if (cards.ability === "Bought_and_Paid_For") {
-                                return;
-                            }
-                            battleArray[index].discardedCards1.push(cards);
-                        })
-                        battleArray[index].playedCardsP1 = checkMercInDeck1;
-                        battleArray[index].score1 = checkMercInDeck1.length * 4;
-                    } else {
+                        if (mercInDeck.length !== 0 && battleArray[index].winner_r1 === battleArray[index].player1) {
+                            battleArray[index].playedCardsP1.forEach((cards) => {
+                                if (cards.ability === "Bought_and_Paid_For") {
+                                    return;
+                                }
+                                battleArray[index].discardedCards1.push(cards);
+                            })
+                            battleArray[index].playedCardsP1 = mercInDeck;
+                            battleArray[index].score1 = mercInDeck.length * 4;
+                            battleArray[index].playedCardsP2.forEach((cards) => {
+                                battleArray[index].discardedCards2.push(cards);
+                            })
+                            battleArray[index].playedCardsP2 = [];
+                            io.in(array[0]).emit("afterEnd", JSON.stringify(battleArray[index]));
+                            return;
+                        }
+
                         battleArray[index].playedCardsP1.forEach((cards) => {
                             battleArray[index].discardedCards1.push(cards);
                         })
                         battleArray[index].playedCardsP1 = [];
-                    }
-                }
-
-                // mercenary ability 2
-                let checkMercInDeck2 = battleArray[index].playedCardsP2.filter(card => card.ability === "Bought_and_Paid_For");
-
-                if (battleArray[index].roundP1 === 2 || battleArray[index].roundP2 === 2) {
-
-                    if (checkMercInDeck2.length !== 0 && battleArray[index].winner_r1 === battleArray[index].player2) {
-                        battleArray[index].playedCardsP2.forEach((cards) => {
-                            if (cards.ability === "Bought_and_Paid_For") {
-                                return;
-                            }
-                            battleArray[index].discardedCards2.push(cards);
-                        })
-                        battleArray[index].playedCardsP2 = checkMercInDeck2;
-                        battleArray[index].score2 = checkMercInDeck2.length * 4;
-                    } else {
                         battleArray[index].playedCardsP2.forEach((cards) => {
                             battleArray[index].discardedCards2.push(cards);
                         })
                         battleArray[index].playedCardsP2 = [];
+                        io.in(array[0]).emit("afterEnd", JSON.stringify(battleArray[index]));
+                        return;
+
                     }
-                }
 
-                if (battleArray[index].roundP1 === 3 || battleArray[index].roundP2 === 3) {
+                    // for round 3
+                    if (battleArray[index].roundP1 === 3) {
 
-                    if (checkMercInDeck2.length !== 0 && battleArray[index].winner_r2 === battleArray[index].player2) {
-                        battleArray[index].playedCardsP2.forEach((cards) => {
-                            if (cards.ability === "Bought_and_Paid_For") {
-                                return;
-                            }
-                            battleArray[index].discardedCards2.push(cards);
+                        if (mercInDeck.length !== 0 && battleArray[index].winner_r2 === battleArray[index].player1) {
+                            battleArray[index].playedCardsP1.forEach((cards) => {
+                                if (cards.ability === "Bought_and_Paid_For") {
+                                    return;
+                                }
+                                battleArray[index].discardedCards1.push(cards);
+                            })
+                            battleArray[index].playedCardsP1 = mercInDeck;
+                            battleArray[index].score1 = mercInDeck.length * 4;
+                            battleArray[index].playedCardsP2.forEach((cards) => {
+                                battleArray[index].discardedCards2.push(cards);
+                            })
+                            battleArray[index].playedCardsP2 = [];
+                            io.in(array[0]).emit("afterEnd", JSON.stringify(battleArray[index]));
+                            return;
+                        }
+
+                        battleArray[index].playedCardsP1.forEach((cards) => {
+                            battleArray[index].discardedCards1.push(cards);
                         })
-                        battleArray[index].playedCardsP2 = checkMercInDeck2;
-                        battleArray[index].score2 = checkMercInDeck2.length * 4;
-                    } else {
+                        battleArray[index].playedCardsP1 = [];
                         battleArray[index].playedCardsP2.forEach((cards) => {
                             battleArray[index].discardedCards2.push(cards);
                         })
                         battleArray[index].playedCardsP2 = [];
+                        io.in(array[0]).emit("afterEnd", JSON.stringify(battleArray[index]));
+                        return;
+                    }
+                }
+
+                // t1 - romulus | t2 - remus 
+                if (battleArray[index].team1 === "Romulus") {
+
+                    let mercInDeck = battleArray[index].playedCardsP2.filter(card => card.ability === "Bought_and_Paid_For");
+
+                    if (battleArray[index].roundP1 === 2) {
+
+                        if (mercInDeck.length !== 0 && battleArray[index].winner_r1 === battleArray[index].player2) {
+                            battleArray[index].playedCardsP2.forEach((cards) => {
+                                if (cards.ability === "Bought_and_Paid_For") {
+                                    return;
+                                }
+                                battleArray[index].discardedCards2.push(cards);
+                            })
+                            battleArray[index].playedCardsP2 = mercInDeck;
+                            battleArray[index].score2 = mercInDeck.length * 4;
+                            battleArray[index].playedCardsP1.forEach((cards) => {
+                                battleArray[index].discardedCards1.push(cards);
+                            })
+                            battleArray[index].playedCardsP1 = [];
+                            io.in(array[0]).emit("afterEnd", JSON.stringify(battleArray[index]));
+                            return;
+                        }
+
+                        battleArray[index].playedCardsP1.forEach((cards) => {
+                            battleArray[index].discardedCards1.push(cards);
+                        })
+                        battleArray[index].playedCardsP1 = [];
+                        battleArray[index].playedCardsP2.forEach((cards) => {
+                            battleArray[index].discardedCards2.push(cards);
+                        })
+                        battleArray[index].playedCardsP2 = [];
+                        io.in(array[0]).emit("afterEnd", JSON.stringify(battleArray[index]));
+                        return;
+
+                    }
+
+                    if (battleArray[index].roundP1 === 3) {
+
+                        if (mercInDeck.length !== 0 && battleArray[index].winner_r2 === battleArray[index].player2) {
+                            battleArray[index].playedCardsP2.forEach((cards) => {
+                                if (cards.ability === "Bought_and_Paid_For") {
+                                    return;
+                                }
+                                battleArray[index].discardedCards2.push(cards);
+                            })
+                            battleArray[index].playedCardsP2 = mercInDeck;
+                            battleArray[index].score2 = mercInDeck.length * 4;
+                            battleArray[index].playedCardsP1.forEach((cards) => {
+                                battleArray[index].discardedCards1.push(cards);
+                            })
+                            battleArray[index].playedCardsP1 = [];
+                            io.in(array[0]).emit("afterEnd", JSON.stringify(battleArray[index]));
+                            return;
+                        }
+
+                        battleArray[index].playedCardsP1.forEach((cards) => {
+                            battleArray[index].discardedCards1.push(cards);
+                        })
+                        battleArray[index].playedCardsP1 = [];
+                        battleArray[index].playedCardsP2.forEach((cards) => {
+                            battleArray[index].discardedCards2.push(cards);
+                        })
+                        battleArray[index].playedCardsP2 = [];
+                        io.in(array[0]).emit("afterEnd", JSON.stringify(battleArray[index]));
+                        return;
                     }
                 }
             }
-            io.in(array[0]).emit("afterEnd", JSON.stringify(battleArray[index]));
+        } catch (e) {
+            console.log(e);
+        }
+    })
+
+    //12th on
+    socket.on("afterDraw", data => {
+        try {
+            const array = JSON.parse(data);
+            const index = battleArray.findIndex(obj => obj.player1 === array[0]);
+            if (battleArray[index].player1 === array[1]) {
+                let newPlayed = battleArray[index].legion1.filter(card => card.id === array[2].id);
+                battleArray[index].playedCardsP1 = newPlayed;
+                battleArray[index].score1 = array[2].strength;
+                io.in(array[0]).emit("d2", JSON.stringify(battleArray[index]));
+                return;
+            }
+            if (battleArray[index].player2 === array[1]) {
+                let newPlayed = battleArray[index].legion2.filter(card => card.id === array[2].id);
+                battleArray[index].playedCardsP2 = newPlayed;
+                battleArray[index].score2 = array[2].strength;
+                io.in(array[0]).emit("d2", JSON.stringify(battleArray[index]));
+                return;
+            }
+
+        } catch (e) {
+            console.log(e);
+        }
+    })
+
+    //13th on
+    socket.on("new", data => {
+        try {
+            const array = JSON.parse(data);
+            const index = battleArray.findIndex(obj => obj.player1 === array[0]);
+            if (battleArray[index].score1 === battleArray[index].score2) {
+                io.in(array[0]).emit("draw", JSON.stringify(battleArray[index]));
+                return;
+            }
+            if (battleArray[index].score1 > battleArray[index].score2) {
+                battleArray[index].winner_g = battleArray[index].player1;
+                io.in(array[0]).emit("afterEnd", JSON.stringify(battleArray[index]));
+                return;
+            }
+            if (battleArray[index].score1 < battleArray[index].score2) {
+                battleArray[index].winner_g = battleArray[index].player2;
+                io.in(array[0]).emit("afterEnd", JSON.stringify(battleArray[index]));
+                return;
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    })
+
+    //14th on
+    socket.on("csInactive", data => {
+        try {
+            const array = JSON.parse(data);
+            const index = battleArray.findIndex(obj => obj.player1 === array[0]);
+            if (battleArray[index].player1 === array[1]) {
+                battleArray[index].winner_g = battleArray[index].player2;
+                io.in(array[0]).emit("decWin", JSON.stringify(battleArray[index]));
+                return;
+            }
+            if (battleArray[index].player2 === array[1]) {
+                battleArray[index].winner_g = battleArray[index].player1;
+                io.in(array[0]).emit("decWin", JSON.stringify(battleArray[index]));
+                return;
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    })
+
+    //15th on
+    socket.on("inactive", data => {
+        try {
+            const array = JSON.parse(data);
+            const index = battleArray.findIndex(obj => obj.player1 === array[0]);
+            battleArray[index].winner_g = battleArray[index].player2;
+            io.in(array[0]).emit("inactiveWinner", JSON.stringify(battleArray[index]));
+            return;
+        } catch (e) {
+            console.log(e);
+        }
     })
 
 })
 
-const addBattle = ({player1, team1, player2, xVempLocked, risk1, risk2, legion1, legion2, cardsP1, cardsP2, score1, score2, playedCardsP1, playedCardsP2, discardedCards1, discardedCards2, turn, winner_g, winner_r1, winner_r2, roundP1, roundP2}) => {
-    const newBattle = {player1, team1, player2, xVempLocked, risk1, risk2, legion1, legion2, cardsP1, cardsP2, score1, score2, playedCardsP1, playedCardsP2, discardedCards1, discardedCards2, turn, winner_g, winner_r1, winner_r2, roundP1, roundP2}
+const addBattle = ({ player1, team1, player2, xVempLocked, risk1, risk2, legion1, legion2, cardsP1, cardsP2, score1, score2, playedCardsP1, playedCardsP2, discardedCards1, discardedCards2, turn, winner_g, winner_r1, winner_r2, roundP1, roundP2, sudisRound, sudisFlag1, sudisFlag2, auxFlag }) => {
+    const newBattle = { player1, team1, player2, xVempLocked, risk1, risk2, legion1, legion2, cardsP1, cardsP2, score1, score2, playedCardsP1, playedCardsP2, discardedCards1, discardedCards2, turn, winner_g, winner_r1, winner_r2, roundP1, roundP2, sudisRound, sudisFlag1, sudisFlag2, auxFlag }
     battleArray.push(newBattle)
     return { newBattle }
-}
-
-const Legionnaire = (cardIndex, oppCardSelected, cardSelected, currentScore, oppScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD) => {
-
-    currentScore = currentScore + cardSelected.strength;
-    playedDeck.forEach((card) => {
-        if (card.name === "Legionnaire") {
-            currentScore = currentScore + card.strength;
-        }
-    })
-    currentDeck.splice(cardIndex, 1);
-    playedDeck.push(cardSelected);
-    return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore];
 }
 
 const challus = (cardIndex, oppCardSelected, cardSelected, currentScore, oppScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD) => {
@@ -492,38 +789,65 @@ const Julius = (cardIndex, oppCardSelected, cardSelected, currentScore, oppScore
     return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore];
 }
 
-const infantry = (cardIndex, oppCardSelected, cardSelected, currentScore, oppScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD) => {
-
-    currentScore = currentScore + cardSelected.strength;
-    playedDeck.forEach((card) => {
-        if (card.name === "Light_Infantry") {
-            currentScore = currentScore + 1;
-        }
-    })
+const magnus = (cardIndex, ls_card, ds_card, cardSelected, currentScore, oppScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, currentLegion) => {
+    if (Object.keys(ds_card).length === 0 && Object.keys(ls_card).length === 0) {
+        currentScore = currentScore + cardSelected.strength;
+        currentDeck.splice(cardIndex, 1);
+        playedDeck.push(cardSelected);
+        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion];
+    }
+    if (Object.keys(ds_card).length === 0 && Object.keys(ls_card).length !== 0) {
+        currentDeck.splice(cardIndex, 1);
+        currentScore = currentScore + cardSelected.strength;
+        currentLegion = currentLegion.filter(card => card.id !== ls_card.id);
+        currentDeck.push(ls_card);
+        playedDeck.push(cardSelected);
+        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion];
+    }
+    if (Object.keys(ls_card).length === 0 && Object.keys(ds_card).length !== 0) {
+        currentDeck.splice(cardIndex, 1);
+        currentScore = currentScore + cardSelected.strength;
+        currentDD = currentDD.filter(card => card.id !== ds_card.id);
+        currentDeck.push(ds_card);
+        playedDeck.push(cardSelected);
+        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion];
+    }
     currentDeck.splice(cardIndex, 1);
+    currentScore = currentScore + cardSelected.strength;
+    currentDD = currentDD.filter(card => card.id !== ds_card.id);
+    currentDeck.push(ds_card);
+    currentLegion = currentLegion.filter(card => card.id !== ls_card.id);
+    currentDeck.push(ls_card);
     playedDeck.push(cardSelected);
-    return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore];
+    return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion];
 }
 
-const Updater = (oppCardSelected, cardSelected, currentScore, oppScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD) => {
+const Updater = (oppCardSelected, cardSelected, currentScore, oppScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, currentLegion, opCurDeck) => {
 
     // 0
-    if(cardSelected.ability === "None" || cardSelected.ability === "Our_Fearless_Leader" || cardSelected.ability === "Bought_and_Paid_For") {
+    if (cardSelected.ability === "None" || cardSelected.ability === "Bought_and_Paid_For" || cardSelected.ability === "Praetorian_Guard" || cardSelected.ability === "Sudis" || cardSelected.ability === "Expendable" || cardSelected.ability === "Filibuster") {
         currentScore = currentScore + cardSelected.strength;
-        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore];
+        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
     }
-    
+
     // 1
-    if(cardSelected.ability === "Volley") {
+    if (cardSelected.ability === "Volley") {
         currentScore = currentScore + cardSelected.strength;
         currentDeck.forEach((card) => {
-            if(card.ability === "Volley") {
+            if (card.ability === "Volley") {
                 currentScore = currentScore + card.strength;
                 playedDeck.push(card)
             }
         })
         currentDeck = currentDeck.filter(card => card.ability !== "Volley");
-        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore];
+        currentLegion.forEach((card) => {
+            if (card.ability === "Volley") {
+                currentScore = currentScore + card.strength;
+                playedDeck.push(card)
+            }
+        })
+        currentLegion = currentLegion.filter(card => card.ability !== "Volley");
+        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
     }
 
     // 2
@@ -534,136 +858,253 @@ const Updater = (oppCardSelected, cardSelected, currentScore, oppScore, currentD
                 currentScore = currentScore + 1;
             }
         })
-        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore];
+        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
     }
 
     // 3
     if (cardSelected.ability === "Pila") {
         if (Object.keys(oppCardSelected).length === 0) {
             currentScore = currentScore + cardSelected.strength;
-            return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore];
+            return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
         }
         currentScore = currentScore + cardSelected.strength;
         oppDD.push(oppCardSelected);
         oppScore = oppScore - oppCardSelected.strength;
-        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore];
+        if (oppCardSelected.ability === "The_Machine") {
+            let leCount = 0;
+            oppPlayedDeck.forEach((card) => {
+                if (card.ability === "The_Machine") {
+                    leCount = leCount + 1;
+                }
+            })
+            if (leCount === 1) {
+                oppScore = oppScore - 4;
+            }
+            if (leCount === 2) {
+                oppScore = oppScore - 14;
+            }
+        }
+        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
     }
 
     // 4
     if (cardSelected.ability === "Son_of_the_Wolf" || cardSelected.ability === "Dead_Eye") {
         if (Object.keys(oppCardSelected).length === 0) {
             currentScore = currentScore + cardSelected.strength;
-            return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore];
+            return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
         }
         currentScore = currentScore + cardSelected.strength;
         oppDD.push(oppCardSelected);
         oppScore = oppScore - oppCardSelected.strength;
-        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore];
+        if (oppCardSelected.ability === "The_Machine") {
+            let leCount = 0;
+            oppPlayedDeck.forEach((card) => {
+                if (card.ability === "The_Machine") {
+                    leCount = leCount + 1;
+                }
+            })
+            if (leCount === 1) {
+                oppScore = oppScore - 4;
+            }
+            if (leCount === 2) {
+                oppScore = oppScore - 14;
+            }
+        }
+        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
     }
 
     // 5
     if (cardSelected.ability === "Ruthless_Tactics") {
         if (Object.keys(oppCardSelected).length === 0) {
             currentScore = currentScore + cardSelected.strength;
-            return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore];
+            return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
         }
         currentScore = currentScore + cardSelected.strength;
-        oppPlayedDeck.forEach((card) => {
-            // romulus ability  
-            if (oppCardSelected.class === "Heavy_Soldier" && oppCardSelected.name === "Romulus") {
+        let newDeck = oppPlayedDeck.filter(card => card.class === oppCardSelected.class);
+        newDeck.forEach((card) => {
+            if (card.name === "Romulus") {
                 return;
             }
-            if (card.class === oppCardSelected.class) {
-                oppScore = oppScore - Math.round(card.strength / 2);
-            }
+            oppScore = oppScore - Math.floor(card.strength / 2);
         })
-        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore];
+        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
     }
 
     // 6
     if (cardSelected.ability === "A_Stones_Throw") {
         currentScore = currentScore + cardSelected.strength;
-        let lowestStrength = Math.min.apply(null, oppPlayedDeck.map(item => item.strength));
+        let deckWoUni = oppPlayedDeck.filter(card => card.class !== "Status_Effect" && card.class !== "Utility");
+        let lowestStrength = Math.min.apply(null, deckWoUni.map(item => item.strength));
+        if (lowestStrength === 10) {
+            return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
+        }
         if (lowestStrength > 0) {
             oppPlayedDeck.forEach((card) => {
                 if (card.strength === lowestStrength) {
-                    oppScore = oppScore - Math.round(card.strength / 2);
+                    oppScore = oppScore - Math.floor(card.strength / 2);
                 }
             })
         }
-        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore];
+        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
     }
 
     // 7
     if (cardSelected.ability === "Persuasive_Speech") {
         if (Object.keys(oppCardSelected).length === 0) {
             currentScore = currentScore + cardSelected.strength;
-            return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore];
+            return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
         }
         currentScore = currentScore + cardSelected.strength + oppCardSelected.strength;
         playedDeck.push(oppCardSelected);
         oppScore = oppScore - oppCardSelected.strength;
-        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore];
+        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
     }
 
     // 8
     if (cardSelected.ability === "Man_of_the_People") {
         if (Object.keys(oppCardSelected).length === 0) {
             currentScore = currentScore + cardSelected.strength;
-            return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore];
+            return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
         }
         currentScore = currentScore + cardSelected.strength;
-        playedDeck.forEach((card) => {
-            if(card.class === oppCardSelected.class) {
-                currentScore = currentScore + cardSelected.strength;
-            }
+        let newDeck = playedDeck.filter(card => card.class === oppCardSelected.class);
+        newDeck.forEach((card) => {
+            currentScore = currentScore + card.strength;
         })
-        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore];
+        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
     }
 
     // 9
-    if (cardSelected.ability === "Eagle_Vision") {
+    if (cardSelected.ability === "Reinforcements" || cardSelected.ability === "Diplomat") {
         if (Object.keys(oppCardSelected).length === 0) {
             currentScore = currentScore + cardSelected.strength;
-            return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore];
+            return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
         }
         currentScore = currentScore + cardSelected.strength;
-        currentDD = currentDD.filter(card => card.name !== oppCardSelected.name);
-        playedDeck.push(oppCardSelected);
-        currentScore = currentScore + oppCardSelected.strength;
-        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore];
+        currentLegion = currentLegion.filter(card => card.id !== oppCardSelected.id);
+        currentDeck.push(oppCardSelected);
+        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
     }
 
     // 10
-    if (cardSelected.ability === "Diplomat") {
+    if (cardSelected.ability === "Laconian_Shib") {
+        currentScore = currentScore + cardSelected.strength;
+        oppPlayedDeck.forEach((card) => {
+            if (card.class !== "Mounted_Soldier" && card.class !== "Mounted_Troops" && card.class !== "Status_Effect" && card.class !== "Utility") {
+                oppScore = oppScore - 1;
+            }
+        })
+        if (oppScore < 0) {
+            oppScore = 0;
+        }
+        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
+    }
+
+    // 11
+    if (cardSelected.ability === "Fog_of_War") {
+        currentScore = currentScore + cardSelected.strength;
+        oppPlayedDeck.forEach((card) => {
+            if (card.class === "Ranged") {
+                oppScore = oppScore - Math.floor(card.strength / 2);
+            }
+        })
+        if (oppScore < 0) {
+            oppScore = 0;
+        }
+        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
+    }
+
+    // 12
+    if (cardSelected.ability === "The_Machine") {
+        let cardCount = 0;
+        playedDeck.forEach((card) => {
+            if (card.name === "Legionnaire") {
+                cardCount = cardCount + 1
+            }
+        })
+        let score = Math.pow(2, cardCount) * cardCount;
+        currentScore = currentScore + score;
+        if (cardCount === 2) {
+            currentScore = currentScore - 2;
+        }
+        if (cardCount === 3) {
+            currentScore = currentScore - 8;
+        }
+        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
+    }
+
+    // 13
+    if (cardSelected.ability === "Wild_Animals") {
+        currentScore = currentScore + cardSelected.strength;
+        let barbCount = 0;
+        playedDeck.forEach((card) => {
+            if (card.ability === "Wild_Animals") {
+                barbCount = barbCount + 1;
+            }
+        })
+        let lsCount = 0;
+        oppPlayedDeck.forEach((card) => {
+            if (card.class === "Light_Soldier") {
+                lsCount = lsCount + 1;
+            }
+        })
+        oppPlayedDeck.forEach((card) => {
+            if (card.class === "Light_Soldier" && lsCount !== 0 && barbCount !== 0) {
+                oppScore = oppScore - 1;
+                lsCount = lsCount - 1;
+                barbCount = barbCount - 1;
+            }
+        })
+        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
+    }
+
+    // 14
+    if (cardSelected.ability === "Morale_Boost") {
+        let cardCount = 0;
+        playedDeck.forEach((card) => {
+            if (card.name === "Light_Infantry") {
+                cardCount = cardCount + 1
+            }
+        })
+        if (cardCount === 1) {
+            currentScore = currentScore + 1;
+        }
+        if (cardCount === 2) {
+            currentScore = currentScore + 3;
+        }
+        if (cardCount === 3) {
+            currentScore = currentScore + 5;
+        }
+        if (cardCount === 4) {
+            currentScore = currentScore + 7;
+        }
+        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
+    }
+
+    // 15
+    if (cardSelected.ability === "Our_Fearless_Leader") {
+        currentScore = currentScore + cardSelected.strength;
+        playedDeck.forEach((card) => {
+            if (card.class !== "Status_Effect" && card.class !== "Utility" && card.ability !== "Our_Fearless_Leader") {
+                currentScore = currentScore + 1;
+            }
+        })
+        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
+    }
+
+    // 16
+    if (cardSelected.ability === "Eyes_on_the_Prize") {
         if (Object.keys(oppCardSelected).length === 0) {
             currentScore = currentScore + cardSelected.strength;
-            return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore];
+            return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
         }
         currentScore = currentScore + cardSelected.strength;
-        currentLegion = currentLegion.filter(card => card.name !== oppCardSelected.name);
-        playedDeck.push(oppCardSelected);
-        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore];
+        oppDD.push(oppCardSelected);
+        const i = opCurDeck.findIndex(obj => obj.id === oppCardSelected.id);
+        opCurDeck.splice(i, 1);
+        return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
     }
-    
-    // if (cardSelected.ability === "Wild_Animals") {
-    //     currentScore = currentScore + cardSelected.strength;
-    //     let barbCount = 0;
-    //     playedDeck.forEach((card) => {
-    //         if (card.ability === "Wild_Animals") {
-    //             barbCount = barbCount + 1;
-    //         }
-    //     })
-    //     let lsCount = 0;
-    //     oppPlayedDeck.forEach((card) => {
-    //         if (card.class === "Light_Soldier") {
-    //             lsCount = lsCount + 1;
-    //         }
-    //     })
-    //     if (lsCount !== 0) {
-    //         //
-    //     }
-    // }
+
 }
 
 instrument(io, { auth: false });

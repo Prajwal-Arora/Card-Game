@@ -1,11 +1,16 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Modal, Spinner } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 import { useHistory, useLocation } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import { useSocketDetail, useWalletDetail } from "../../../store/hooks";
 import { setBattleArray } from "../../../store/reducer/userReducer";
-import { RemusCards, RomulusCards } from "../../../utils/constant/BattleCardCollection";
+import {
+  RemusCards,
+  RomulusCards,
+} from "../../../utils/constant/BattleCardCollection";
+import { handleGameVictoryScreen } from "../../../utils/SocketCommon";
+import PoolTimer from "../../common/PoolTimer";
 import CardInfoModal from "./CardInfoModal";
 import "./index.css";
 
@@ -24,7 +29,22 @@ const CardList = () => {
     player1: [],
     player2: [],
   });
+
+  const [timer, setTimer] = useState(true);
+
+  useEffect(() => {
+    setTimer(false);
+    setTimeout(() => {
+      setTimer(true);
+    }, 1);
+  }, [battleList]);
+
   const socket: any = useSocketDetail();
+
+  const inactiveCardSelection = () => {
+    const arr = [location.state.owner, walletState.accounts[0]];
+    socket.emit("csInactive", JSON.stringify(arr));
+  };
 
   const modal = (items: any) => {
     return (
@@ -33,6 +53,31 @@ const CardList = () => {
       </>
     );
   };
+
+  const handleRedirect = useCallback(
+    (team) => {
+      history.push({
+        pathname: "/game-winner",
+        search: team,
+      });
+    },
+    [history]
+  );
+
+  useEffect(() => {
+    socket.on("decWin", (obj: any) => {
+      const battleObj = JSON.parse(obj);
+      dispatch(setBattleArray(battleObj));
+      if (battleObj.winner_g) {
+        handleGameVictoryScreen(
+          battleObj.winner_g,
+          battleObj.player1,
+          battleObj.team1,
+          handleRedirect
+        );
+      }
+    });
+  }, [socket]);
 
   useEffect(() => {
     if (deck.player1.length !== 0 && deck.player2.length !== 0) {
@@ -59,6 +104,14 @@ const CardList = () => {
       });
     }
     handleRequiredCard();
+
+    return () => {
+      let arr: any = [];
+      for (let i = 0; i < battleList.length; i++) {
+        battleList[i]["active"] = false;
+        arr.push(battleList[i]);
+      }
+    };
   }, [location.state, flag, socket]);
 
   useEffect(() => {
@@ -100,7 +153,7 @@ const CardList = () => {
   };
 
   const selectCard = (cardData: any) => {
-    if (selectedBattleList.length < 10) {
+    if (selectedBattleList.length < 15) {
       const cardIndex = selectedBattleList.findIndex((item: any) => {
         return item.id === cardData.id;
       });
@@ -111,11 +164,12 @@ const CardList = () => {
         if (item.id === cardData.id) {
           item.active = true;
         }
+
         return item;
       });
       setBattleList(newBattleList);
     } else {
-      toast("10 cards already selected");
+      toast("15 cards already selected");
     }
   };
 
@@ -148,40 +202,63 @@ const CardList = () => {
   };
 
   const handleContinue = () => {
-    const getRandomBattleArray = selectedBattleList
-      .sort(() => Math.random() - Math.random())
-      .slice(0, 7);
-    console.log(getRandomBattleArray, "getRandomBattleArray");
     const client = walletState.accounts[0];
-    const data = {
-      owner: location.state.owner,
-      client: client,
-      cards: getRandomBattleArray,
-    };
+    const data = [location.state.owner, client, selectedBattleList];
     socket.emit("cards-selected", JSON.stringify(data));
     setFlag(true);
+  };
+
+  window.onbeforeunload = function () {
+    return "Your work will be lost.";
   };
 
   return (
     <div className="card-collection-container text-center">
       <div className="position-relative " style={{ bottom: "55px" }}>
-        <div className=" d-flex z-0">
-          <img
-            width="25%"
-            className="m-auto "
-            src="/images/Rectangle 4.png"
-            alt=""
-          />
+        <div className=" d-flex z-0 justify-content-end">
           <div
-            style={{ fontSize: "24px" }}
-            className="gradient-text position-absolute w-100 text-white text-center m-auto"
+            className=" position-relative d-flex z-0"
+            style={{ width: "300px" }}
           >
-            SELECT CARDS
+            <img
+              style={{ width: "90%" }}
+              className="m-auto "
+              src="/images/Rectangle 4.png"
+              alt=""
+            />
+            <div
+              style={{
+                width: "60%",
+                fontSize: "21px",
+                position: "absolute",
+                top: "46%",
+                left: "50%",
+                transform: " translate(-50%, -50%)",
+                color: "white",
+              }}
+            >
+              CARD SELECTION
+            </div>
+          </div>
+          {timer ? (
+            <PoolTimer time={300} response={inactiveCardSelection} />
+          ) : (
+            <div style={{ marginLeft: "45px" }}></div>
+          )}
+        </div>
+
+        <div
+          className="my-2 d-flex justify-content-start text-white align-items-center"
+          style={{ height: "50px" }}
+        >
+          <div
+            className="position-absolute text-uppercase px-4 rounded bg-dark"
+            style={{ border: "1px solid yellow" }}
+          >
+            Select 15 cards ({selectedBattleList?.length} Selected)
           </div>
         </div>
-        <div className="my-2 text-white text-uppercase">
-          Select 10 cards ({selectedBattleList?.length} Selected)
-        </div>
+
         <div className="row ">
           {battleList.map((items: any) => {
             return (
@@ -212,7 +289,7 @@ const CardList = () => {
         </div>
         <div>
           <button
-            disabled={selectedBattleList?.length !== 10}
+            disabled={selectedBattleList?.length !== 15}
             onClick={handleContinue}
             className="m-auto mt-3 custom-btn d-flex align-items-center"
           >
@@ -222,20 +299,17 @@ const CardList = () => {
                 <img src="/images/right-arrow.png" alt="" className="w-75" />
               </div>
             </div>
-          </button>
-          ({" "}
+          </button>{" "}
           <div className="waiting-opponent">
             <Modal show={isPlayer}>
               <Spinner animation="border" />
               <Modal.Body style={{ background: "black", color: "yellow" }}>
-                Waiting for other player to select his cards
+                Waiting for other player to select their cards
               </Modal.Body>
             </Modal>
           </div>
-          )
         </div>
       </div>
-      <ToastContainer />
     </div>
   );
 };

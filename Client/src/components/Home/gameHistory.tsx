@@ -1,4 +1,5 @@
 import React from "react";
+import { Table } from "react-bootstrap";
 import { useHistory } from "react-router";
 import { useWalletDetail } from "../../store/hooks";
 import CustomTable from "../common/CustomTable";
@@ -15,7 +16,7 @@ const GameHistory = () => {
       },
       {
         label: "xVemp",
-        key: "xVemp"
+        key: "xVemp",
       },
       {
         label: "Win/loss",
@@ -24,26 +25,74 @@ const GameHistory = () => {
           return <span>{row?.status} </span>;
         },
       },
-
+      {
+        label: "Claim",
+        key: "claim",
+        render: () => {
+          return (
+            <div className="custom-btn p-0 text-center text-dark">Claim </div>
+          );
+        },
+      },
     ],
     rows: [
-      { gameId: '0xA0d1BFe603e328162eCFF4d95CBdae7434dB2352', status: "Win", xVemp: 10 },
-      { gameId: "0xA0d1BFe603e328162eCFF4d95CBdae7434dB2352", status: "Win", xVemp: 14 },
-      { gameId: "0xA0d1BFe603e328162eCFF4d95CBdae7434dB2352", status: "Win", xVemp: 14 },
-      { gameId: "0xA0d1BFe603e328162eCFF4d95CBdae7434dB2352", status: "Win", xVemp: 14 },
-      { gameId: "0xA0d1BFe603e328162eCFF4d95CBdae7434dB2352", status: "Win", xVemp: 14 },
-      { gameId: "0xA0d1BFe603e328162eCFF4d95CBdae7434dB2352", status: "Win", xVemp: 14 },
-      { gameId: "0xA0d1BFe603e328162eCFF4d95CBdae7434dB2352", status: "Win", xVemp: 14 },
-      { gameId: "0xA0d1BFe603e328162eCFF4d95CBdae7434dB2352", status: "Win", xVemp: 14 },
-      { gameId: "0xA0d1BFe603e328162eCFF4d95CBdae7434dB2352", status: "Win", xVemp: 14 },
-      { gameId: "0xA0d1BFe603e328162eCFF4d95CBdae7434dB2352", status: "Win", xVemp: 14 },
+      {
+        gameId: "0xA0d1BFe603e328162eCFF4d95CBdae7434dB2352",
+        status: "Win",
+        xVemp: 10,
+      },
+      {
+        gameId: "0xA0d1BFe603e328162eCFF4d95CBdae7434dB2352",
+        status: "Win",
+        xVemp: 14,
+      },
+      {
+        gameId: "0xA0d1BFe603e328162eCFF4d95CBdae7434dB2352",
+        status: "Win",
+        xVemp: 14,
+      },
+      {
+        gameId: "0xA0d1BFe603e328162eCFF4d95CBdae7434dB2352",
+        status: "Win",
+        xVemp: 14,
+      },
+      {
+        gameId: "0xA0d1BFe603e328162eCFF4d95CBdae7434dB2352",
+        status: "Win",
+        xVemp: 14,
+      },
+      {
+        gameId: "0xA0d1BFe603e328162eCFF4d95CBdae7434dB2352",
+        status: "Win",
+        xVemp: 14,
+      },
+      {
+        gameId: "0xA0d1BFe603e328162eCFF4d95CBdae7434dB2352",
+        status: "Win",
+        xVemp: 14,
+      },
+      {
+        gameId: "0xA0d1BFe603e328162eCFF4d95CBdae7434dB2352",
+        status: "Win",
+        xVemp: 14,
+      },
+      {
+        gameId: "0xA0d1BFe603e328162eCFF4d95CBdae7434dB2352",
+        status: "Win",
+        xVemp: 14,
+      },
+      {
+        gameId: "0xA0d1BFe603e328162eCFF4d95CBdae7434dB2352",
+        status: "Win",
+        xVemp: 14,
+      },
     ],
     totalItems: 20,
   });
 
-  const handleBack=()=>{
-    history.push("/create-room");
-  }
+  const handleBack = () => {
+    history.push("/");
+  };
 
   return (
     <div className="w-75 m-auto mb-5">
@@ -61,13 +110,46 @@ const GameHistory = () => {
           Game History
         </div>
       </div>
-      <div className="mt-4 history-table-wrapper">
+      <div className="mt-4 history-table-wrapper header-table">
+        <Table responsive striped hover variant="dark" {...tableStructure}>
+          <thead>
+            <tr>
+              {/* {columns.map(({ key, label }) => {
+              return <th key={key}>{label}</th>;
+            })} */}
+              <th>Game ID</th>
+              <th>{""}</th>
+              <th>{""}</th>
+              <th>{""}</th>
+              <th>{""}</th>
+              <th>{""}</th>
+              <th>{""}</th>
+              <th>{""}</th>
+              <th>{""}</th>
+              <th>{""}</th>
+              <th>{""}</th>
+              <th>{""}</th>
+              <th>{""}</th> <th>{""}</th>
+              <th>{""}</th>
+              <div>
+                <th>xVemp</th>
+                <th>{""}</th>
+                <th>Win/loss</th>
+                <th>{""}</th>
+                <th>Claim</th>
+              </div>
+            </tr>
+          </thead>
+        </Table>
+      </div>
+      <div className="mt-4 history-table-wrapper v-scrolling">
         <CustomTable {...tableStructure} />
       </div>
       <div className="d-flex justify-content-center">
-        <button onClick={handleBack} className="end-btn">Back</button>
+        <button onClick={handleBack} className="end-btn">
+          Back
+        </button>
       </div>
-
     </div>
   );
 };

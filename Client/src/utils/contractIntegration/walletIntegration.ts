@@ -3,8 +3,6 @@ import { ThunkDispatch } from "redux-thunk";
 import Web3 from "web3"
 import { clearLocalStore, setLocalStore } from "../../common/localStorage";
 import { setAccounts, setChainId, setConnected, setWeb3 } from "../../store/reducer/walletReducer";
-import { useAppDispatch } from "../../store/store";
-
 
 
 declare const window: any;
@@ -15,7 +13,6 @@ declare global {
         web3: Web3;
     }
 }
-
 
 export const fetchAccounts = () => {
     return new Promise((resolve, reject) => {
@@ -91,7 +88,6 @@ export const fetchWalletPublicDataAsync = async (dispatch: any) => {
         }
     })
     getConnected()
-
 }
 
     export const getConnection = async (dispatch: any) => {

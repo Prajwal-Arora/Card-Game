@@ -24,6 +24,14 @@
     color: white;
 }
 
+.toastr {
+    color: white!important;
+    background: black!important;
+    border: 1px solid black
+}
+
+.toastProgress {}
+
 .App-link {
     color: #61dafb;
 }
@@ -39,18 +47,31 @@
 
 .custom-btn {
     padding: 5px 50px;
-    background: linear-gradient( 224.89deg, #FFD12B 36.94%, #FFFF7B 49.9%, #FFF469 62.87%);
+    background: linear-gradient( 224.89deg, #ffd12b 36.94%, #ffff7b 49.9%, #fff469 62.87%);
     border-radius: 11px;
 }
 
 .gradient-text {
-    text-shadow: #FF7A00 50%;
-    background: -webkit-linear-gradient(#FFD12B 100%, #FFFF7B 100%, #FFF469 100%);
+    text-shadow: #ff7a00 50%;
+    background: -webkit-linear-gradient(#ffd12b 100%, #ffff7b 100%, #fff469 100%);
     -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    cursor: pointer
+    color: transparent;
+    cursor: pointer;
 }
 
 .modal {
-    overflow-y: hidden!important;
+    overflow-y: hidden !important;
+}
+
+@media (max-width: 801px) {
+    .mobile-text {
+        display: inline-block !important;
+    }
+    .desktop-text {
+        display: none !important;
+    }
+}
+
+.mobile-text {
+    display: none;
 }

@@ -1,33 +1,54 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
+
 import {
   useBattleDetail,
   useSocketDetail,
   useWalletDetail,
 } from "../../store/hooks";
 import { useAppDispatch } from "../../store/store";
-import { addressSubstring, copyToClipboard } from "../../utils/CommonUsedFun";
+import { addressSubstring, copyToClipboard } from "../../utils/CommonUsedFunction";
 import { socketJoinIntegration } from "../../utils/contractIntegration/socketIntegration";
 import "./index.css";
-
+import InfiniteScroll from "react-infinite-scroll-component";
 const JoinRoom = () => {
   const dispatch = useAppDispatch();
   let history = useHistory();
-  const battleArray = useBattleDetail();
+  const battleArrayData = useBattleDetail();
+  const [battleArray, setBattleArray] = useState<any>([]);
   const walletState: any = useWalletDetail();
   let socket: any = useSocketDetail();
 
   // let location = useLocation();
-  // const [roomData,] = useState<any>(location.state)
+  useEffect(() => {
+    if (battleArrayData.length > 0) {
+      setBattleArray(battleArrayData);
+    }
+  }, [battleArrayData]);
 
   useEffect(() => {
-    socketJoinIntegration(dispatch, {
-      account: walletState.accounts[0],
-    });
+  
+    const joinedRoom=()=>{
+      socketJoinIntegration(dispatch, {
+        account: walletState.accounts[0],
+        roomFilled:handleRedirect,
+      });
+     
+    }
+    const join=setInterval(joinedRoom,500)
+    return()=>{
+      clearInterval(join)
+    }
   }, []);
 
+  const handleRedirect = useCallback(() => {
+    history.push({
+      pathname: "/join-room",
+    });
+  }, [history]);
+
   function handleBack() {
-    history.push("/create-room");
+    history.push("/");
   }
 
   const handleJoin = (value: any) => {
@@ -36,7 +57,6 @@ const JoinRoom = () => {
       client: walletState.accounts[0],
     };
     socket.emit("joinCreatedRooms", JSON.stringify(payload));
-
     history.push({
       pathname: "/risk-factor",
       search: value,
@@ -62,35 +82,54 @@ const JoinRoom = () => {
           </div>
         </div>
         <div className="mt-2">
-          {battleArray.length !== 0 ? (
-            battleArray?.map((item: any) => (
-              <div
-                className="d-flex justify-content-center align-items-center my-3"
-                key={item.player1}
-              >
-                <div
-                  className="gradient-text"
-                  onClick={() => copyToClipboard(item.player1)}
-                >
-                  {addressSubstring(item.player1)}
-                </div>
-                <div className="mx-3 xVempTxt d-flex">
-                  <div className="w-50 ">{item.xVempLocked} xVemp </div>
-                  <div className="w-50 text-end"> {item.team1}</div>
-                </div>
-                <div>
-                  <button
-                    onClick={() => handleJoin(item.player1)}
-                    className="custom-btn px-5"
+          <div
+            className={`${
+              battleArray.length <= 10 ? "" : "infinite-scroll-style"
+            }scrollableDiv `}
+          >
+            <InfiniteScroll
+              dataLength={battleArray?.length}
+              next={battleArray}
+              style={{ display: "flex", flexDirection: "column-reverse" }} //To put endMessage and loader to the top.
+              inverse={true}
+              hasMore={true}
+              loader={""}
+              scrollableTarget="scrollableDiv"
+            >
+              {battleArray?.length !== 0 ? (
+                battleArray && battleArray?.map((item: any) => (
+                  <div
+                    className="d-flex justify-content-center align-items-center my-3 font-style"
+                    key={item.player1}
                   >
-                    Join
-                  </button>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="text-center text-white">No Rooms Available</div>
-          )}
+                    {/* react-infinite-scroll-component */}
+                    <div
+                      className="gradient-text"
+                      onClick={() => copyToClipboard(item.player1)}
+                    >
+                      {addressSubstring(item.player1)}
+                    </div>
+                    <div className="mx-3 xVempTxt d-flex">
+                      <div className="w-50 font-style">
+                        {item.xVempLocked} xVemp{" "}
+                      </div>
+                      <div className="w-50 text-end"> {item.team1}</div>
+                    </div>
+                    <div>
+                      <button
+                        onClick={() => handleJoin(item.player1)}
+                        className="custom-btn px-5 font-style"
+                      >
+                        Join
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center text-white">No Rooms Available</div>
+              )}{" "}
+            </InfiniteScroll>
+          </div>
         </div>
         <div className="text-center mt-4">
           <button className="end-btn" onClick={handleBack}>
