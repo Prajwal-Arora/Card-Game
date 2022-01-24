@@ -1,0 +1,144 @@
+.modal-bg {
+  background: #0c0c0c;
+  border: 2px solid yellow;
+  box-shadow: 0px 0px 20px rgba(255, 122, 0, 0.5);
+  border-radius: 24px;
+}
+
+.input-bg {
+  background: rgba(12, 12, 12, 0.25);
+  box-shadow: inset 0px 0px 15px #000000;
+  border-radius: 8px;
+  border: 1px solid yellow;
+  color: white !important;
+}
+
+.end-btn {
+  border: 1px solid yellow;
+  padding: 5px;
+  background: #000000;
+  border-radius: 11px;
+  width: 30%;
+  color: yellow;
+  font-size: 20px;
+}
+
+.right-arrow-position {
+  right: -60%;
+}
+
+.text-yellow {
+  --tw-text-opacity: 1;
+  color: yellow;
+}
+
+.welcome-txt {
+  line-height: 55px;
+  font-size: 36px;
+}
+
+.modal-content {
+  background-color: unset !important;
+}
+
+.modal-dialog {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.userAddress {
+  width: 15%;
+  cursor: pointer;
+}
+
+.center {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 5px solid #daa520;
+  padding: 10px;
+  border-radius: 12px;
+  font-weight: bold;
+}
+
+.center-lwr {
+  position: absolute;
+  width: 250px;
+  font-weight: lighter;
+  height: 100px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 5px solid #daa520;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.xVempTxt {
+  background: rgba(12, 12, 12, 0.25);
+  box-shadow: inset 0px 0px 15px #000000;
+  border-radius: 8px;
+  color: #fff;
+  width: 25%;
+  padding: 5px 20px;
+  margin-left: 10px;
+  border: 1px solid #ffd12b;
+}
+
+.dropdown-btn {
+  background: rgba(12, 12, 12, 0.25);
+  box-shadow: inset 0px 0px 15px #000000;
+  border-radius: 8px;
+  color: #474747 !important;
+  text-align: start;
+  width: 100%;
+  border: 1px solid #ffd12b;
+}
+
+.infinite-scroll-style {
+  height: 300px;
+  overflow: "auto";
+  display: "flex";
+  flex-direction: "column";
+}
+
+.history-table-wrapper {
+  width: 720px;
+  max-width: 100%;
+  margin: auto;
+}
+
+.v-scrolling {
+  height: 200px;
+  overflow-y: auto;
+  display: block;
+}
+
+.header-table .table > thead {
+  font-weight: 600;
+  border-bottom: 1px solid;
+  font-size: 20px;
+  color: #ffd12b;
+}
+
+.header-table .table > :not(caption) > * > * {
+  background-color: unset !important;
+  box-shadow: none !important;
+  border-bottom-width: 0px;
+}
+
+.header-table .table > thead {
+  font-weight: 600;
+  border-bottom: 1px solid;
+  font-size: 20px;
+  color: #ffd12b;
+}
+
+.inactivity-player {
+  margin-top: 5%;
+  text-align: center;
+  color: white;
+  font-size: 24px;
+}

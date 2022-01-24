@@ -1,1 +1,1 @@
-# GWENT rip-off on blockchain 
+VEmpire the beginning!

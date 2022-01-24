@@ -3,12 +3,16 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const BattleSchema = new Schema({
-    player1: { type: String, required: true, trim: true },
-    xVempLockedPlayer1: { type: String, required: true, trim: true },
-    player2: { type: String, required: true, trim: true },
-    xVempLockedPlayer2: { type: String, required: true, trim: true },
-    risk: { type: String, required: true, trim: true }
-}, { timestamps: true });
+
+    uid: { type: String, required: true, trim: true },
+
+    winner: { type: String, trim: true },
+
+    claimed: { type: Boolean, default: false },
+
+    dataSentToContract: { type: Boolean, default: false }
+
+});
 
 var Battle = mongoose.model('Battle', BattleSchema);
 module.exports = Battle;

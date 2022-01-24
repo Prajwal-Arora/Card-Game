@@ -28,12 +28,14 @@ const ScoreUpdate = ({
   const endClicked: any = useAppSelector((state) => state?.userDetail.endClick);
   const [flag1, setFlag1] = useState(false);
   const [flag2, setFlag2] = useState(false);
+  const [currentRound2, setCurrentRound2] = useState(false);
+  const [currentRound3, setCurrentRound3] = useState(false);
   const dispatch = useDispatch();
   let history = useHistory();
   const battleArray = useBattleDetail();
 
   const storeRoundScores = () => {
-    if (battleArray.roundP2 === 1 && battleArray.roundP2 === 1) {
+    if (battleArray.roundP1 === 1 || battleArray.roundP2 === 1) {
       dispatch(
         setScoreRound1({
           p1: battleArray.score1,
@@ -41,21 +43,26 @@ const ScoreUpdate = ({
         })
       );
     }
-    if (battleArray.roundP1 === 2 && battleArray.roundP2 === 2) {
-      dispatch(
-        setScoreRound2({
-          p1: battleArray.score1,
-          p2: battleArray.score2,
-        })
-      );
+    if (battleArray.roundP1 === 2 || battleArray.roundP2 === 2) {
+      if(currentRound2){
+        dispatch(
+          setScoreRound2({
+            p1: battleArray.score1,
+            p2: battleArray.score2,
+          })
+        );
+      }
+        
     }
-    if (battleArray.roundP1 === 3 && battleArray.roundP2 === 3) {
-      dispatch(
-        setScoreRound3({
-          p1: battleArray.score1,
-          p2: battleArray.score2,
-        })
-      );
+    if (battleArray.roundP1 === 3 || battleArray.roundP2 === 3) {
+      if(currentRound3){
+        dispatch(
+          setScoreRound3({
+            p1: battleArray.score1,
+            p2: battleArray.score2,
+          })
+        );
+      }
     }
   };
 
@@ -70,7 +77,7 @@ const ScoreUpdate = ({
   );
 
   useEffect(() => {
-    if(battleArray.p1Score ===0 && battleArray.p2Score===0 && !isDraw &&round.roundP1 ===round.roundP2) {
+    // if(battleArray.p1Score ===0 && battleArray.p2Score===0 && !isDraw &&round.roundP1 ===round.roundP2) {
     socket.on("inactiveWinner", (obj: any) => {
       const battleObj = JSON.parse(obj);
       dispatch(setBattleArray(battleObj));
@@ -83,7 +90,7 @@ const ScoreUpdate = ({
         );
       }
     });
-  }
+  // }
   }, [battleArray.score1, battleArray.score2, isDraw, ownerAccount, socket])
 
   useEffect(() => {
@@ -105,8 +112,15 @@ const ScoreUpdate = ({
   }, [account, ownerAccount, round.P1, round.P2, round.roundP1, round.roundP2]);
 
   useEffect(() => {
+    if(battleArray.roundP1===battleArray.roundP2 && battleArray.roundP1===2){
+      setCurrentRound2(true)
+    }
+    if(battleArray.roundP1===battleArray.roundP2 && battleArray.roundP1===3){
+      setCurrentRound3(true)
+    }
     storeRoundScores();
-  }, [battleArray.roundP1,battleArray.roundP2,battleArray.score1,battleArray.score2]);
+    
+  }, [battleArray.roundP1, battleArray.roundP2, battleArray.score1, battleArray.score2]);
 
   const handleEnd = () => {
     handleRoundEnd(currentSelectedCard, ownerAccount, account, turn, socket);

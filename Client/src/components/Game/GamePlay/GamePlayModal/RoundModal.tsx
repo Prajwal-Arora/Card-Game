@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Modal } from "react-bootstrap";
 import { useDispatch } from "react-redux";
-import { useBattleDetail } from "../../../../store/hooks";
+import { toast } from "react-toastify";
+import { useBattleDetail, useWalletDetail } from "../../../../store/hooks";
 import PoolTimer from "../../../common/PoolTimer";
 
 // import { setScoreRound1, setScoreRound2, setScoreRound3 } from '../../../../store/reducer/userReducer';
@@ -26,8 +27,11 @@ const RoundModal: React.FC<RoundProps> = ({
   winnerRound,
 }) => {
   const battleArray = useBattleDetail();
+  const walletState: any = useWalletDetail();
   const [show, setShow] = useState(false);
   const [currentRound, setCurrentRound] = useState(1);
+  const [sudisPresentP1, setSudisPresentP1] = useState(false)
+  const [sudisPresentP2, setSudisPresentP2] = useState(false)
   const [roundWinTeam, setRoundWinTeam] = useState("");
   // const dispatch = useDispatch();
 
@@ -42,30 +46,40 @@ const RoundModal: React.FC<RoundProps> = ({
     }
   };
 
-  // const storeRoundScores=()=>{
-  //     if(battleArray.roundP2===1 && battleArray.roundP2===1){
-  //       dispatch(setScoreRound1({
-  //         p1:battleArray.score1,
-  //         p2:battleArray.score2
-  //       }))
-  //     }
-  //     if(battleArray.roundP1===2 && battleArray.roundP2===2){
-  //       dispatch(setScoreRound2({
-  //         p1:battleArray.score1,
-  //         p2:battleArray.score2
-  //       }))
-  //     }
-  //     if(battleArray.roundP1===3 && battleArray.roundP2===3){
-  //       dispatch(setScoreRound3({
-  //         p1:battleArray.score1,
-  //         p2:battleArray.score2
-  //       }))
-  //     }
-  //   }
 
-  // useEffect(() => {
-  //     storeRoundScores()
-  //    }, [battleArray.roundP1, battleArray.roundP2, battleArray.score1, battleArray.score2])
+  const checkSudisTurn = () => {
+    if (battleArray.sudisFlag1 === 1) {
+      setSudisPresentP1(true)
+    }
+    if (battleArray.sudisFlag2 === 1) {
+      setSudisPresentP2(true)
+    }
+    if (battleArray.player1 === walletState?.accounts[0]) {
+      if (battleArray.sudisFlag1 === 0 && sudisPresentP1) {
+        toast("card was discarded by sudis")
+        setSudisPresentP1(false)
+      }
+      if (battleArray.sudisFlag2 === 0 && sudisPresentP2) {
+        toast("Sudis discard opponent's card")
+        setSudisPresentP2(false)
+      }
+    }
+    if (battleArray.player2 === walletState.accounts[0]) {
+
+      if (battleArray.sudisFlag2 === 0 && sudisPresentP2) {
+        toast("card was discarded by sudis")
+        setSudisPresentP2(false)
+      }
+      if (battleArray.sudisFlag1 === 0 && sudisPresentP1) {
+        toast("Sudis discard opponent card")
+        setSudisPresentP1(false)
+      }
+    }
+  }
+
+  useEffect(() => {
+    checkSudisTurn()
+  }, [walletState, battleArray.sudisFlag2, battleArray.sudisFlag1, sudisPresentP1, sudisPresentP2, setSudisPresentP1, setSudisPresentP2])
 
   useEffect(() => {
     if (
@@ -120,7 +134,7 @@ const RoundModal: React.FC<RoundProps> = ({
 
   return (
     <div className="waiting-opponent">
-      <Modal onHide={handleNextRound} show={show && battleArray.winner_g==='' && roundModalDraw === false}>
+      <Modal onHide={handleNextRound} show={show && battleArray.winner_g === '' && roundModalDraw === false}>
         <Modal.Body className="modal-bg winner-modal">
           <div
             className="text-center"

@@ -1,21 +1,23 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import "./index.css";
 import Slider from "react-slick";
 import { useHistory, useLocation } from "react-router-dom";
 import {
   useBattleDetail,
   useSocketDetail,
+  useUserDetail,
   useWalletDetail,
 } from "../../../store/hooks";
 import {
   setBattleArray,
   setEndClick,
+  setEventClickable,
 } from "../../../store/reducer/userReducer";
 import { useDispatch } from "react-redux";
 import UserPlayedDeck from "./PlayingDeck/UserPlayedDeck";
 import OpponentDeck from "./PlayingDeck/OpponentDeck";
 import ScoreUpdate from "./ScoreUpdate";
-import { settings } from "../../../utils/constant/constant";
+import { settings } from "../../../utils/config/constant/constant";
 import GamePlayModal from "./GamePlayModal";
 import useSound from "use-sound";
 import CardInfoModal from "../CardList/CardInfoModal";
@@ -30,9 +32,10 @@ const TurnPlayMusic = require("../../../assets/Sounds/Card Played.mp3");
 
 const GamePlay = () => {
   let location: any = useLocation();
-  const [playTurnSound] = useSound(TurnPlayMusic.default);
   let history = useHistory();
   const dispatch = useDispatch();
+  const [playTurnSound] = useSound(TurnPlayMusic.default);
+  const userDetails = useUserDetail()
   const [showModal, setModal] = useState<any>("");
   const [turn, setTurn] = useState(location.state.owner);
   const [playedDisabled, setPlayedDisabled] = useState(false);
@@ -42,13 +45,14 @@ const GamePlay = () => {
   const [currentRound, setCurrentRound] = useState(1);
   const [winnerRound, setWinnerRound] = useState({ p1: "", p2: "" });
   const [battleList, setBattleList] = useState<any>([]);
+  
   const [battleListOpponent, setBattleListOpponent] = useState<any>([]);
   const [currentSelectedCard, setcurrentSelectedCard] = useState({});
   const [openLegion, setOpenLegion] = useState(false);
   const [openDiscardedPile, setOpenDiscardedPile] = useState(false);
   const [openExploratoryModal, setOpenExploratoryModal] = useState(false);
   const [filibusterPresentRemus, setFilibusterPresentRemus] = useState(false);
-  const [timerOff, setTimerOff] = useState(false)
+  const [timerOff, setTimerOff] = useState(false);
   const [filibusterPresentRomulus, setFilibusterPresentRomulus] =
     useState(false);
   const [playedDeck, setPlayedDeck] = useState<any>([]);
@@ -56,7 +60,6 @@ const GamePlay = () => {
   const [discardedPile, setDiscardedPile] = useState<any>([]);
   const [isDraw, setIsDraw] = useState(false);
   const [roundModalDraw, setroundModalDraw] = useState(false);
-  const [flag, setFlag] = useState(true);
   const [resetCounter, setResetCounter] = useState(true);
   const [legion, setLegion] = useState<any>([]);
   const [score, setScore] = useState<any>({
@@ -76,7 +79,7 @@ const GamePlay = () => {
     setTimeout(() => {
       setResetCounter(true);
     }, 1);
-  }, [flag]);
+  }, [userDetails.eventClickable]);
 
   useEffect(() => {
     handleUpdateBattleArray();
@@ -104,6 +107,25 @@ const GamePlay = () => {
     [history]
   );
 
+  const isFilibusterPresentDeck=(count:number)=>{
+    if (count > 0) {
+      if (battleArray.team1 === "Remus") {
+        setFilibusterPresentRemus(true);
+      }
+      if (battleArray.team1 === "Romulus") {
+        setFilibusterPresentRomulus(true);
+      }
+    }
+    else{
+      if (battleArray.team1 === "Remus") {
+        setFilibusterPresentRemus(false);
+      }
+      if (battleArray.team1 === "Romulus") {
+        setFilibusterPresentRomulus(false);
+      }
+    }
+  }
+
   useEffect(() => {
     handleGameVictoryScreen(
       gameWinner,
@@ -114,44 +136,32 @@ const GamePlay = () => {
   }, [currentSelectedCard, gameWinner, turn]);
 
   const handleChangeTurnCardEmit = (array: any[]) => {
-    if (flag) {
-      socket.emit("cardClick", JSON.stringify(array));
-      if (round.roundP1 === round.roundP2) {
-        socket.emit("changeTurn", JSON.stringify(array));
-      }
+    socket.emit("cardClick", JSON.stringify(array));
+    if (round.roundP1 === round.roundP2) {
+      socket.emit("changeTurn", JSON.stringify(array));
+      dispatch(setEventClickable(false))
+      // setFlag(false)
     }
   };
 
-  const debouncedChangeHandler = useMemo(() => {
-    return throttle(handleChangeTurnCardEmit, 1000);
-  }, [round]);
+  useEffect(() => {
+    dispatch(setEventClickable(true))
+    // setFlag(true)
+  }, [turn])
 
   //Check filibuster
   useEffect(() => {
+    
     if (location.state.owner === walletState.accounts[0]) {
       const count = battleArray.playedCardsP2.filter(
         (item: any) => item.name === "Filibuster"
       ).length;
-      if (count > 0) {
-        if (battleArray.team1 === "Remus") {
-          setFilibusterPresentRemus(true);
-        }
-        if (battleArray.team1 === "Romulus") {
-          setFilibusterPresentRomulus(true);
-        }
-      }
+      isFilibusterPresentDeck(count)
     } else {
       const count = battleArray.playedCardsP1.filter(
         (item: any) => item.name === "Filibuster"
       ).length;
-      if (count > 0) {
-        if (battleArray.team1 === "Remus") {
-          setFilibusterPresentRomulus(true);
-        }
-        if (battleArray.team1 === "Romulus") {
-          setFilibusterPresentRemus(true);
-        }
-      }
+      isFilibusterPresentDeck(count)
     }
   }, [
     battleArray.cardsP1,
@@ -162,23 +172,25 @@ const GamePlay = () => {
     walletState.accounts,
   ]);
 
-  const delayCardSelection = () => {
-
-    handleRoundEnd(
-      currentSelectedCard,
-      location.state.owner,
-      walletState.accounts[0],
-      turn,
-      socket
-    );
-
-    const arr = [location.state.owner]
-    socket.emit("inactive", JSON.stringify(arr))
+  const delayCardPlay = () => {
+    if (location.state.owner===walletState.accounts[0]) {
+      const arr = [location.state.owner];
+      socket.emit("inactive", JSON.stringify(arr));
+    }
+    else{
+      handleRoundEnd(
+        currentSelectedCard,
+        location.state.owner,
+        walletState.accounts[0],
+        turn,
+        socket
+      );
+    }
     dispatch(setEndClick(true));
   };
 
   const handleRemove = (event: any, data: any) => {
-    setFlag(false);
+    // setFlag(false);
     //When player played his turn
     playTurnSound();
     if (walletState.accounts[0] === turn) {
@@ -208,14 +220,13 @@ const GamePlay = () => {
         data.ability !== "Eyes_on_the_Prize" &&
         data.ability !== "Praetorian_Guard"
       ) {
-        debouncedChangeHandler(array);
+        handleChangeTurnCardEmit(array);
         setSelectedCardDeck(false);
         setPlayedDisabled(false);
       }
       if (data.ability === "Pila") {
         //for Javeline
         if (opponentPlayedDeck.length !== 0 && !onlyUniversalCard) {
-          toast("Select enemy card to discard");
           setPlayedDeck([...playedDeck, data]);
           const cardMoreThan3 =
             opponentPlayedDeck.filter((item: any) => item.strength > 3)
@@ -226,13 +237,14 @@ const GamePlay = () => {
             ).length;
           // if opponent player has no card less than strength 3
           if (cardMoreThan3) {
-            debouncedChangeHandler(array);
+            handleChangeTurnCardEmit(array);
             setPlayedDisabled(false);
           } else {
+            toast("Select enemy card to discard");
             setPlayedDisabled(true);
           }
         } else {
-          debouncedChangeHandler(array);
+          handleChangeTurnCardEmit(array);
         }
       }
 
@@ -242,26 +254,26 @@ const GamePlay = () => {
           setPlayedDeck([...playedDeck, data]);
           setPlayedDisabled(true);
         } else {
-          debouncedChangeHandler(array);
+          handleChangeTurnCardEmit(array);
         }
       }
       if (data.ability === "Ruthless_Tactics") {
         if (filibusterPresentRemus) {
-          debouncedChangeHandler(array);
+          handleChangeTurnCardEmit(array);
         } else {
           if (opponentPlayedDeck.length !== 0 && !onlyUniversalCard) {
             toast("Select enemy class to half");
             setPlayedDeck([...playedDeck, data]);
             setPlayedDisabled(true);
           } else {
-            debouncedChangeHandler(array);
+            handleChangeTurnCardEmit(array);
           }
         }
       }
       if (data.ability === "Persuasive_Speech") {
         // setPlayedDeck([...playedDeck, data])
         if (filibusterPresentRemus) {
-          debouncedChangeHandler(array);
+          handleChangeTurnCardEmit(array);
         } else {
           if (opponentPlayedDeck.length !== 0 && !onlyUniversalCard) {
             const lowest_strength = opponentPlayedDeck
@@ -287,7 +299,7 @@ const GamePlay = () => {
                   walletState.accounts[0],
                   {},
                 ];
-                debouncedChangeHandler(arr);
+                handleChangeTurnCardEmit(arr);
               } else {
                 const arr = [
                   data,
@@ -295,7 +307,7 @@ const GamePlay = () => {
                   walletState.accounts[0],
                   reqArr,
                 ];
-                debouncedChangeHandler(arr);
+                handleChangeTurnCardEmit(arr);
               }
 
               // setPlayedDisabled(true)
@@ -305,17 +317,16 @@ const GamePlay = () => {
               setPlayedDisabled(true);
             }
           } else {
-            // socket.emit("cardClick", JSON.stringify(array));
-            debouncedChangeHandler(array);
+            handleChangeTurnCardEmit(array);
           }
         }
       }
       if (data.ability === "Man_of_the_People") {
         if (filibusterPresentRomulus) {
-          debouncedChangeHandler(array);
+          handleChangeTurnCardEmit(array);
         } else {
           if (playedDeck.length === 0) {
-            debouncedChangeHandler(array);
+            handleChangeTurnCardEmit(array);
           } else {
             toast("Select a class to double ");
             setPlayedDisabled(true);
@@ -335,15 +346,14 @@ const GamePlay = () => {
           !onlyUniversalCard
         ) {
           toast("Select enemy card to discard");
-          // alert("Send an enemy upto strength 6 to your opponents discard pile");
           setPlayedDeck([...playedDeck, data]);
           setPlayedDisabled(true);
         } else {
-          debouncedChangeHandler(array);
+          handleChangeTurnCardEmit(array);
         }
       }
       if (data.ability === "Our_Fearless_Leader") {
-        debouncedChangeHandler(array);
+        handleChangeTurnCardEmit(array);
         //  setPlayedDisabled(false)
       }
       if (data.ability === "Master_Spy") {
@@ -355,7 +365,7 @@ const GamePlay = () => {
             {},
             {},
           ];
-          debouncedChangeHandler(arr);
+          handleChangeTurnCardEmit(arr);
         } else if (legion.length === 0 && discardedPile.length !== 0) {
           setOpenDiscardedPile(true);
         } else if (legion.length !== 0 && discardedPile.length === 0) {
@@ -367,12 +377,11 @@ const GamePlay = () => {
         }
       }
       if (data.ability === "Diplomat") {
-        // const arr = [data, location.state.owner, walletState.accounts[0], {}, {}]
         if (filibusterPresentRomulus) {
-          debouncedChangeHandler(array);
+          handleChangeTurnCardEmit(array);
         } else {
           if (legion.length === 0) {
-            debouncedChangeHandler(array);
+            handleChangeTurnCardEmit(array);
           } else {
             // toast("Pick a card from your Legion");
             setOpenLegion(true);
@@ -381,9 +390,8 @@ const GamePlay = () => {
       }
       if (data.ability === "Reinforcements") {
         if (legion.length === 0) {
-          debouncedChangeHandler(array);
+          handleChangeTurnCardEmit(array);
         } else {
-          // toast("Pick a card from your Legion");
           setOpenLegion(true);
         }
       }
@@ -392,7 +400,7 @@ const GamePlay = () => {
           toast("Select two cards to view and click to again discard one");
           setOpenExploratoryModal(true);
         } else {
-          debouncedChangeHandler(array);
+          handleChangeTurnCardEmit(array);
         }
       }
       if (data.ability === "Praetorian_Guard") {
@@ -400,7 +408,7 @@ const GamePlay = () => {
           toast("Select a card to protect");
           setPlayedDisabled(true);
         } else {
-          debouncedChangeHandler(array);
+          handleChangeTurnCardEmit(array);
         }
       }
     }
@@ -490,50 +498,54 @@ const GamePlay = () => {
       });
       handleSetBattleState(battleObj);
     });
+    if (userDetails.eventClickable === true) {
+      socket.on("updater", (obj: any) => {
+        const battleObj = JSON.parse(obj);
+        dispatch(setBattleArray(battleObj));
+        console.log(
+          battleObj,
+          "----------------------CLICK-------------------------"
+        );
+        handleSetBattleState(battleObj);
+        // setFlag(true);
+      });
 
-    socket.on("updater", (obj: any) => {
-      const battleObj = JSON.parse(obj);
-      dispatch(setBattleArray(battleObj));
-      console.log(
-        battleObj,
-        "----------------------CLICK-------------------------"
-      );
-      handleSetBattleState(battleObj);
-      setFlag(true);
-    });
+      socket.on("turnChanged", (obj: any) => {
+        const battleObj = JSON.parse(obj);
+        console.log(
+          battleObj,
+          "----------------------TURN-------------------------"
+        );
+        setTurn(battleObj.turn);
+      });
+    };
+  }
 
-    socket.on("draw", (obj: any) => {
-      setTimerOff(true)
-      setIsDraw(true);
-      setroundModalDraw(true);
-      const battleObj = JSON.parse(obj);
-      dispatch(setBattleArray(battleObj));
-    });
 
-    socket.on("d2", (obj: any) => {
-      const battleObj = JSON.parse(obj);
-      handleSetBattleState(battleObj);
-      dispatch(setBattleArray(battleObj));
-      if (
-        battleObj.playedCardsP1.length !== 0 &&
-        battleObj.playedCardsP2.length !== 0
-      ) {
-        setTimeout(() => {
-          const arr = [location.state.owner];
-          socket.emit("new", JSON.stringify(arr));
-        }, 2500);
-      }
-    });
+  socket.on("draw", (obj: any) => {
+    setTimerOff(true);
+    setIsDraw(true);
+    setroundModalDraw(true);
+    const battleObj = JSON.parse(obj);
+    dispatch(setBattleArray(battleObj));
+  });
 
-    socket.on("turnChanged", (obj: any) => {
-      const battleObj = JSON.parse(obj);
-      console.log(
-        battleObj,
-        "----------------------TURN-------------------------"
-      );
-      setTurn(battleObj.turn);
-    });
-  };
+  socket.on("d2", (obj: any) => {
+    const battleObj = JSON.parse(obj);
+    handleSetBattleState(battleObj);
+    dispatch(setBattleArray(battleObj));
+    if (
+      battleObj.playedCardsP1.length !== 0 &&
+      battleObj.playedCardsP2.length !== 0
+    ) {
+      setTimeout(() => {
+        const arr = [location.state.owner];
+        socket.emit("new", JSON.stringify(arr));
+      }, 2500);
+    }
+  });
+
+
 
   const handleHover = (items: any) => {
     setModal(modal(items));
@@ -559,7 +571,7 @@ const GamePlay = () => {
         ) : resetCounter && !timerOff ? (
           <div className="opponent-turn-wait">
             <div className="d-flex justify-content-center align-items-center">
-              <PoolTimer time={90} response={delayCardSelection} />
+              <PoolTimer time={90} response={delayCardPlay} />
             </div>
           </div>
         ) : (
@@ -575,7 +587,7 @@ const GamePlay = () => {
             filibusterPresentRomulus={filibusterPresentRomulus}
             playedDisabled={playedDisabled}
             setPlayedDisabled={setPlayedDisabled}
-            handleChangeTurnCardEmit={debouncedChangeHandler}
+            handleChangeTurnCardEmit={handleChangeTurnCardEmit}
             round={round}
             turn={turn}
             setSelectedCardDeck={setSelectedCardDeck}
@@ -601,7 +613,7 @@ const GamePlay = () => {
         />
         <UserPlayedDeck
           playTurnSound={playTurnSound}
-          handleChangeTurnCardEmit={debouncedChangeHandler}
+          handleChangeTurnCardEmit={handleChangeTurnCardEmit}
           turn={turn}
           setSelectedCardDeck={setSelectedCardDeck}
           selectedCardDeck={selectedCardDeck}
@@ -613,7 +625,7 @@ const GamePlay = () => {
           socket={socket}
           opponentPlayedDeck={opponentPlayedDeck}
         />
-        {flag ? (
+        {userDetails.eventClickable ? (
           <div className="game-play-corousel">
             <Slider {...settings}>
               {battleList?.map((items: any) => (
@@ -626,8 +638,8 @@ const GamePlay = () => {
                     >
                       <div
                         className={`card bottom-card-row relative ${turn === walletState.accounts[0]
-                          ? "border-style"
-                          : "border-style-not-allowed"
+                            ? "border-style"
+                            : "border-style-not-allowed"
                           }`}
                         key={items.id}
                       >
@@ -688,8 +700,8 @@ const GamePlay = () => {
                       >
                         <div
                           className={`card bottom-card-row relative ${turn === walletState.accounts[0]
-                            ? "border-style"
-                            : "border-style-not-allowed"
+                              ? "border-style"
+                              : "border-style-not-allowed"
                             }`}
                           key={items.id}
                         >
@@ -746,7 +758,7 @@ const GamePlay = () => {
           legion={legion}
           discardedPile={discardedPile}
           currentSelectedCard={currentSelectedCard}
-          handleChangeTurnCardEmit={debouncedChangeHandler}
+          handleChangeTurnCardEmit={handleChangeTurnCardEmit}
           setOpenLegion={setOpenLegion}
           openLegion={openLegion}
           setOpenDiscardedPile={setOpenDiscardedPile}
@@ -759,6 +771,7 @@ const GamePlay = () => {
           setIsDraw={setIsDraw}
           isDraw={isDraw}
         />
+        {/* <ToastContainer toastClassName="toastr" progressClassName="toastProgress"/> */}
       </div>
     </>
   );

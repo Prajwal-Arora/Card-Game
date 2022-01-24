@@ -6,18 +6,20 @@ import "./App.css";
 import { useAppDispatch } from "./store/store";
 
 import { fetchWalletPublicDataAsync } from "./utils/contractIntegration/walletIntegration";
-// import CreateRoom from "./components/Home/CreateRoom";
 import RiskFactor from "./components/RiskFactor";
-import JoinRoom from "./components/Home/JoinRoom";
-import GameHistory from "./components/Home/gameHistory";
-import GameWinner from "./components/Home/GameWinner/GameWinner";
-import BackgroundVideo from "./common/BackgroundVideo";
+import JoinRoom from "./components/Home/JoinRoom/JoinRoom";
+import GameHistory from "./components/Home/GameHistory/GameHistory";
+import GameWinner from "./components/Game/GamePlay/GameWinner/GameWinner";
 import WalletConnection from "./components/Home/WalletConnection";
-import {  ToastContainer } from "react-toastify";
+import PageLoader from "./components/common/PageLoader";
+import BackgroundImg from "./common/BackgroundImg";
+import { toast, ToastContainer } from "react-toastify";
+import { apiHandler } from "./services/apiService/axios";
+import { getLeaderBoard } from "./services/apiService/userServices";
+import LeaderBoard from "./components/Home/LeaderBoard";
 const CardList = lazy(() => import('./components/Game/CardList'))
 const GamePlay = lazy(() => import('./components/Game/GamePlay'))
-const CreateRoom = lazy(() => import('./components/Home/CreateRoom'))
-
+const CreateRoom = lazy(() => import('./components/Home/CreateRoom/CreateRoom'))
 
 
 function App() {
@@ -31,7 +33,7 @@ function App() {
   //   });
   // };
 
-  useEffect(() => {
+  useEffect(() => {    
     fetch(
       "https://api.opensea.io/api/v1/assets?owner=0x60db761b4f5444fa8455a5ddb66e5ba841f6e5ed&asset_contract_address=0x495f947276749Ce646f68AC8c248420045cb7b5e&order_direction=desc&offset=0&limit=20&collection=vempire-the-founding-soldiers"
     )
@@ -43,7 +45,6 @@ function App() {
             response.assets[i].name.split(" - ")[1].replace(" ", "_")
           );
         }
-        console.log(userNFT, "userNFT");
       })
       .catch((err) => console.error(err));
     const connect = async () => {
@@ -54,10 +55,10 @@ function App() {
 
   return (
     <Router>
-      <BackgroundVideo />
+      <BackgroundImg />
       <WalletConnection />
-      <ToastContainer toastClassName="toastr" progressClassName="toastProgress"/>
-      <Suspense fallback={<div>Loading...</div>}>
+      <ToastContainer toastClassName="toastr" hideProgressBar={true} progressClassName="toastProgress"/>
+      <Suspense fallback={<PageLoader/>}>
       <Switch>
         <Route path="/" exact>
           <CreateRoom />
@@ -79,6 +80,9 @@ function App() {
         </Route>
         <Route path="/game-winner" exact>
           <GameWinner />
+        </Route>
+        <Route path="/leaderboard" exact>
+          <LeaderBoard />
         </Route>
       </Switch>
       </Suspense>

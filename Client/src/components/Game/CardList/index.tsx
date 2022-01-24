@@ -1,30 +1,30 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Modal, Spinner } from "react-bootstrap";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Card, Modal, Spinner } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 import { useHistory, useLocation } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import { useSocketDetail, useWalletDetail } from "../../../store/hooks";
 import { setBattleArray } from "../../../store/reducer/userReducer";
-import {
-  RemusCards,
-  RomulusCards,
-} from "../../../utils/constant/BattleCardCollection";
+import { RemusCards, RomulusCards } from "../../../utils/config/constant/BattleCardCollection";
 import { handleGameVictoryScreen } from "../../../utils/SocketCommon";
 import PoolTimer from "../../common/PoolTimer";
+import AdditionalInfoModal from "./AdditionalInfoModal";
 import CardInfoModal from "./CardInfoModal";
 import "./index.css";
 
 const CardList = () => {
   let location: any = useLocation();
+  const dispatch = useDispatch();
   let history = useHistory();
   const [showModal, setModal] = useState<any>("");
   const [battleId, setBattleId] = useState<any>();
   const walletState: any = useWalletDetail();
   const [selectedBattleList, setSelectedBattleList] = useState<any>([]);
   const [battleList, setBattleList] = useState<any>([]);
-  const dispatch = useDispatch();
   const [isPlayer, setIsplayer] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(true)
   const [flag, setFlag] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [deck, setDeck] = useState({
     player1: [],
     player2: [],
@@ -202,11 +202,14 @@ const CardList = () => {
   };
 
   const handleContinue = () => {
-    const client = walletState.accounts[0];
-    const data = [location.state.owner, client, selectedBattleList];
-    socket.emit("cards-selected", JSON.stringify(data));
-    setFlag(true);
+    if (!flag) {
+      const client = walletState.accounts[0];
+      const data = [location.state.owner, client, selectedBattleList];
+      socket.emit("cards-selected", JSON.stringify(data));
+      setFlag(true);
+    }
   };
+
 
   window.onbeforeunload = function () {
     return "Your work will be lost.";
@@ -240,7 +243,7 @@ const CardList = () => {
               CARD SELECTION
             </div>
           </div>
-          {timer ? (
+          {timer && !showInfoModal ? (
             <PoolTimer time={300} response={inactiveCardSelection} />
           ) : (
             <div style={{ marginLeft: "45px" }}></div>
@@ -275,10 +278,17 @@ const CardList = () => {
                   >
                     i
                   </div>
+                  <Card className="card-border" style={{ display: loading ? "block" : "none", width: '18rem', height: '16vw' }} >
+                    <Card.Body>
+                      <Spinner className="cardLoading" animation="border" />
+                    </Card.Body>
+                  </Card>
                   <img
                     width="100%"
-                    className={items?.active ? "active" : ""}
+                    style={{ display: loading ? "none" : "block" }}
+                    className={items?.active ? "active" : "card-border"}
                     src={items.battleCard}
+                    onLoad={() => setLoading(false)}
                     alt="battle-cards"
                   />
                   {items.id === battleId ? showModal : ""}
@@ -290,7 +300,7 @@ const CardList = () => {
         <div>
           <button
             disabled={selectedBattleList?.length !== 15}
-            onClick={handleContinue}
+            onClick={() => handleContinue()}
             className="m-auto mt-3 custom-btn d-flex align-items-center"
           >
             <div className="d-flex align-items-center position-relative">
@@ -310,6 +320,8 @@ const CardList = () => {
           </div>
         </div>
       </div>
+      <AdditionalInfoModal showInfoModal={showInfoModal} setShowInfoModal={setShowInfoModal}/>
+      <ToastContainer toastClassName="toastr" hideProgressBar={true} progressClassName="toastProgress" />
     </div>
   );
 };

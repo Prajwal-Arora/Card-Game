@@ -1,12 +1,11 @@
 const express = require('express');
 const app = express();
 const port = 3003;
-const cors = require('cors')
+const cors = require('cors');
 const { instrument } = require('@socket.io/admin-ui');
-// const mongoose = require('./database');
-
-app.use(cors());
-
+const { randomUUID } = require('crypto');
+const bodyParser = require("body-parser");
+const mongoose = require('./database');
 const server = app.listen(port, () => console.log("Server listening on port " + port));
 const io = require("socket.io")(server, {
     cors: {
@@ -14,6 +13,20 @@ const io = require("socket.io")(server, {
     },
     pingTimeout: 60000
 });
+
+app.use(cors());
+app.use(bodyParser.urlencoded({extended : false}));
+
+// Api routes
+const userApiRoute = require('./api/user');
+const battleApiRoute = require('./api/battle');
+
+app.use("/api/user", userApiRoute);
+app.use("/api/battle", battleApiRoute);
+
+app.get("/", (req, res, next) => {
+    res.status(200);
+})
 
 const battleArray = [];
 
@@ -48,7 +61,7 @@ io.on("connection", socket => {
                     playedCardsP2: [],
                     discardedCards1: [],
                     discardedCards2: [],
-                    turn: payload.p1,
+                    turn: '',
                     winner_g: '',
                     winner_r1: '',
                     winner_r2: '',
@@ -57,7 +70,8 @@ io.on("connection", socket => {
                     sudisRound: 0,
                     sudisFlag1: 0,
                     sudisFlag2: 0,
-                    auxFlag: 0
+                    auxFlag: 0,
+                    uid: randomUUID().split('-').join('')
                 })
                 socket.join(payload.p1);
                 socket.emit("p1xObj", JSON.stringify(newBattle))
@@ -94,6 +108,8 @@ io.on("connection", socket => {
             }
 
             if (battleArray[index].player1 === array[1]) {
+                battleArray[index].player1 = '';
+                io.in(array[0]).emit("cleanedArray", JSON.stringify(battleArray[index]));
                 battleArray.splice(index, 1);
                 return;
             }
@@ -137,22 +153,26 @@ io.on("connection", socket => {
             const index = battleArray.findIndex(obj => obj.player1 === array[0]);
 
             if (battleArray[index].player1 === array[1]) {
+                console.log("p1 legion" + battleArray[index].legion1.length);
                 battleArray[index].legion1 = array[2];
                 for (let i = 0; i < 10; i++) {
                     let randomIndex = Math.floor(Math.random() * battleArray[index].legion1.length);
                     battleArray[index].cardsP1.push(battleArray[index].legion1[randomIndex]);
                     battleArray[index].legion1.splice(randomIndex, 1);
                 }
+                console.log("p1 cards" + battleArray[index].cardsP1.length);
                 io.in(array[0]).emit("arrayWithCards", JSON.stringify(battleArray[index]));
                 return;
             }
             if (battleArray[index].player2 === array[1]) {
+                console.log("p2 legion" + battleArray[index].legion2.length);
                 battleArray[index].legion2 = array[2];
                 for (let i = 0; i < 10; i++) {
                     let randomIndex = Math.floor(Math.random() * battleArray[index].legion2.length);
                     battleArray[index].cardsP2.push(battleArray[index].legion2[randomIndex]);
                     battleArray[index].legion2.splice(randomIndex, 1);
                 }
+                console.log("p2 cards" + battleArray[index].cardsP2.length);
                 io.in(array[0]).emit("arrayWithCards", JSON.stringify(battleArray[index]));
                 return;
             }
@@ -171,17 +191,17 @@ io.on("connection", socket => {
 
                 let cardIndex = battleArray[index].cardsP1.findIndex(card => card.id === array[0].id);
 
-                if (array[0].ability === "Sudis") {
-                    battleArray[index].sudisFlag2 = 1;
-                    battleArray[index].sudisRound = battleArray[index].roundP1;
-                }
-
-                if (battleArray[index].sudisFlag1 === 1 && battleArray[index].roundP1 === battleArray[index].sudisRound + 1 && battleArray[index].playedCardsP1.length === 0) {
+                if (battleArray[index].sudisFlag1 === 1 && battleArray[index].roundP1 === battleArray[index].sudisRound + 1) {
                     const playedCard = battleArray[index].cardsP1.splice(cardIndex, 1);
                     battleArray[index].discardedCards1.push(playedCard[0]);
                     battleArray[index].sudisFlag1 = 0;
                     io.in(array[1]).emit("updater", JSON.stringify(battleArray[index]));
                     return;
+                }
+
+                if (array[0].ability === "Sudis") {
+                    battleArray[index].sudisFlag2 = 1;
+                    battleArray[index].sudisRound = battleArray[index].roundP1;
                 }
 
                 // magnus ONLY
@@ -262,17 +282,17 @@ io.on("connection", socket => {
 
                 let cardIndex = battleArray[index].cardsP2.findIndex(card => card.id === array[0].id);
 
-                if (array[0].ability === "Sudis") {
-                    battleArray[index].sudisFlag1 = 1;
-                    battleArray[index].sudisRound = battleArray[index].roundP2;
-                }
-
-                if (battleArray[index].sudisFlag2 === 1 && battleArray[index].roundP2 === battleArray[index].sudisRound + 1 && battleArray[index].playedCardsP2.length === 0) {
+                if (battleArray[index].sudisFlag2 === 1 && battleArray[index].roundP2 === battleArray[index].sudisRound + 1) {
                     const playedCard = battleArray[index].cardsP2.splice(cardIndex, 1);
                     battleArray[index].discardedCards2.push(playedCard[0]);
                     battleArray[index].sudisFlag2 = 0;
                     io.in(array[1]).emit("updater", JSON.stringify(battleArray[index]));
                     return;
+                }
+
+                if (array[0].ability === "Sudis") {
+                    battleArray[index].sudisFlag1 = 1;
+                    battleArray[index].sudisRound = battleArray[index].roundP2;
                 }
 
                 // magnus ONLY
@@ -755,10 +775,22 @@ io.on("connection", socket => {
         }
     })
 
+    //16th on
+    socket.on("setTurn", data => {
+        try {
+            const array = JSON.parse(data);
+            const index = battleArray.findIndex(obj => obj.player1 === array[0]);
+            battleArray[index].turn = array[1];
+            io.in(array[0]).emit("turnIsSet", JSON.stringify(battleArray[index]));
+        } catch (e) {
+            console.log(e);
+        }
+    })
+
 })
 
-const addBattle = ({ player1, team1, player2, xVempLocked, risk1, risk2, legion1, legion2, cardsP1, cardsP2, score1, score2, playedCardsP1, playedCardsP2, discardedCards1, discardedCards2, turn, winner_g, winner_r1, winner_r2, roundP1, roundP2, sudisRound, sudisFlag1, sudisFlag2, auxFlag }) => {
-    const newBattle = { player1, team1, player2, xVempLocked, risk1, risk2, legion1, legion2, cardsP1, cardsP2, score1, score2, playedCardsP1, playedCardsP2, discardedCards1, discardedCards2, turn, winner_g, winner_r1, winner_r2, roundP1, roundP2, sudisRound, sudisFlag1, sudisFlag2, auxFlag }
+const addBattle = ({ player1, team1, player2, xVempLocked, risk1, risk2, legion1, legion2, cardsP1, cardsP2, score1, score2, playedCardsP1, playedCardsP2, discardedCards1, discardedCards2, turn, winner_g, winner_r1, winner_r2, roundP1, roundP2, sudisRound, sudisFlag1, sudisFlag2, auxFlag, uid }) => {
+    const newBattle = { player1, team1, player2, xVempLocked, risk1, risk2, legion1, legion2, cardsP1, cardsP2, score1, score2, playedCardsP1, playedCardsP2, discardedCards1, discardedCards2, turn, winner_g, winner_r1, winner_r2, roundP1, roundP2, sudisRound, sudisFlag1, sudisFlag2, auxFlag, uid }
     battleArray.push(newBattle)
     return { newBattle }
 }
@@ -957,6 +989,9 @@ const Updater = (oppCardSelected, cardSelected, currentScore, oppScore, currentD
         currentScore = currentScore + cardSelected.strength + oppCardSelected.strength;
         playedDeck.push(oppCardSelected);
         oppScore = oppScore - oppCardSelected.strength;
+        if (oppScore < 0) {
+            oppScore = 0;
+        }
         return [currentScore, currentDeck, playedDeck, oppPlayedDeck, currentDD, oppDD, oppScore, currentLegion, opCurDeck];
     }
 

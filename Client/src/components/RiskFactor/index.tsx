@@ -1,13 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { Card } from "react-bootstrap";
-import { setBattleArray, setEndClick, setRiskFactor } from "../../store/reducer/userReducer";
+import {
+  setBattleArray,
+  setEndClick,
+  setRiskFactor,
+} from "../../store/reducer/userReducer";
 import { useDispatch } from "react-redux";
 import "./index.css";
-import { useSocketDetail, useWalletDetail } from "../../store/hooks";
+import {
+  useSocketDetail,
+  useWalletDetail,
+  useBattleDetail
+} from "../../store/hooks";
 import { useHistory, useLocation } from "react-router-dom";
 import { addressSubstring } from "../../utils/CommonUsedFunction";
 import useSound from "use-sound";
 import PoolTimer from "../common/PoolTimer";
+import { Allowance, Approve, battleLockToken } from "../../utils/contractIntegration/walletIntegration";
+import { toast } from "react-toastify";
+import { apiHandler } from "../../services/apiService/axios";
+import { getUniqueNumber } from "../../services/apiService/userServices";
+
 //const JoinedRoomAudio = require("../../assets/Sounds/Room Joined v2.mp3");
 const JoinedRoomAudio = require("../../assets/Sounds/Room Joined v2.mp3");
 
@@ -17,66 +30,66 @@ const RiskFactor = () => {
   let history = useHistory();
   const walletState: any = useWalletDetail();
   const [team, setTeam] = useState("");
+  const [afkTimer, setAfkTimer] = useState(true);
   const [requiredArray, setRequiredArray] = useState({
     player1: location.state,
     player2: "",
     risk1: "",
     risk2: "",
+    lockedAmount: "",
   });
+
+  const battleArray = useBattleDetail();
+  const [disable, setDisable] = useState(false)
   const socket: any = useSocketDetail();
   const dispatch = useDispatch();
-
   const [timer, setTimer] = useState(true);
+  const [uniqueValue, setUniqueValue] = useState('');
+  const [show, setShow] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [isApproved, setIsApproved] = useState(false);
+
+  const startLoading = () => {
+    setLoading(true);
+  };
+
+  const stopLoading = () => {
+    setLoading(false);
+  };
+
+  const handleClose = () => {
+    setShow(false);
+  };
 
   const handleBack = () => {
     const array = [location.state, walletState.accounts[0]];
     socket?.emit("clean", JSON.stringify(array));
-    socket?.on("cleanedArray", (array: any) => {
-      const battleArray = JSON.parse(array);
-      dispatch(setBattleArray(battleArray));
-    });
-    history.goBack();
+   
+    history.push("/")
   };
+
+
 
   window.onload = function () {
     history.goBack();
   };
 
   window.onpopstate = function (event) {
-    const array = [location.state, walletState.accounts[0]];
-    socket?.emit("clean", JSON.stringify(array));
-    socket?.on("cleanedArray", (array: any) => {
-      const battleArray = JSON.parse(array);
-      dispatch(setBattleArray(battleArray));
-    });
+    handleBack()
   };
 
   useEffect(() => {
-    dispatch(setEndClick(false));
-    if (
-      requiredArray.risk1 === requiredArray.risk2 &&
-      requiredArray.risk1 !== "" &&
-      requiredArray.risk2 !== ""
-    ) {
-      let selectedTeam = "";
-      if (requiredArray.player1 !== walletState?.accounts[0]) {
-        if (team === "Romulus") {
-          selectedTeam = "Remus";
-        } else if (team === "Remus") {
-          selectedTeam = "Romulus";
-        }
-      } else {
-        selectedTeam = team;
+    const handleRisk = async () => {
+      dispatch(setEndClick(false));
+      if (requiredArray.risk1 === requiredArray.risk2 && requiredArray.risk1 !== "" && requiredArray.risk2 !== "") {
+        setDisable(true)
+        setAfkTimer(false)
+        setShow(true);
+        await handleTransaction();
+        setShow(false);
       }
-      history.push({
-        pathname: `/cards-selection/${location.state}`,
-        search: selectedTeam,
-        state: {
-          team: selectedTeam,
-          owner: location.state,
-        },
-      });
-    }
+    };
+    handleRisk();
   }, [
     history,
     location.state,
@@ -87,6 +100,43 @@ const RiskFactor = () => {
     walletState?.accounts,
   ]);
 
+  const handleTransaction = async () => {
+    // let approve:any 
+    // const amountAfterRisk = (parseFloat(requiredArray?.lockedAmount) * parseFloat(requiredArray.risk1)) / 100;
+    // startLoading();
+    // const allowance = await Allowance(walletState.accounts[0]);
+    // if (allowance === '0') {
+      // let approve = await Approve(walletState.accounts[0]);
+      // console.log(approve, "approve")
+    // }
+   
+    // const battle = await battleLockToken(walletState.accounts[0], amountAfterRisk, requiredArray.risk1, uniqueValue);
+  
+    // stopLoading();
+    // if (battle !== '') {
+      let selectedTeam = "";
+      if (requiredArray.player1 !== walletState?.accounts[0]) {
+        if (team === "Romulus") {
+          selectedTeam = "Remus";
+        } else if (team === "Remus") {
+          selectedTeam = "Romulus";
+        }
+      } else {
+        selectedTeam = team;
+      }
+      
+      history.push({
+        pathname: `/cards-selection/${location.state}`,
+        search: selectedTeam,
+        state: {
+          team: selectedTeam,
+          owner: location.state,
+        },
+      });
+    // }
+
+  };
+
   useEffect(() => {
     socket?.on("p2Obj", (obj: any) => {
       joinedRoomAudio();
@@ -96,31 +146,46 @@ const RiskFactor = () => {
         player2: requiredObj.player2,
         risk1: "",
         risk2: "",
+        lockedAmount: requiredObj.xVempLocked,
       });
     });
 
+  }, [history, joinedRoomAudio, socket]);
+
+  useEffect(() => {
+    if(requiredArray.player1==='' && battleArray?.winner_r1===''){
+      toast("Room deleted")
+      history.push("/")
+    }
+  }, [battleArray, history, requiredArray.player1])
+
+  useEffect(() => {
+    
+
     socket?.on("cleanedArray", (obj: any) => {
       const requiredObj = JSON.parse(obj);
-      console.log(requiredObj, "requiredObj");
-      setRequiredArray({
+      dispatch(setBattleArray(requiredObj));
+      setRequiredArray((prev) => ({
+        ...prev,
         player1: requiredObj.player1,
         player2: requiredObj.player2,
         risk1: "",
         risk2: "",
-      });
+      }));
     });
 
     socket?.on("riskFactorChange", (obj: any) => {
       const riskObj = JSON.parse(obj);
-      setRequiredArray({
+      setRequiredArray((prev) => ({
+        ...prev,
         player1: riskObj.player1,
         player2: riskObj.player2,
         risk1: riskObj.risk1,
         risk2: riskObj.risk2,
-      });
+      }));
       setTeam(riskObj.team1);
     });
-  }, [socket, location, joinedRoomAudio]);
+  }, [])
 
   const predefinedValues = [
     { label: "10%", value: 10 },
@@ -137,15 +202,15 @@ const RiskFactor = () => {
     setTimeout(() => {
       setTimer(true);
     }, 1);
+    setAfkTimer(true)
   };
 
   return (
     <div>
+      {/* <TransactionModal show={show} handleClose={handleClose} account={walletState.accounts[0]} /> */}
       <div style={{ position: "absolute", top: "10%", right: "5%" }}>
-        {requiredArray.player2 !== "" && timer ? (
+        {(requiredArray.player2 !== "" && timer && afkTimer) && (
           <PoolTimer time={60} response={() => handleBack()} />
-        ) : (
-          ""
         )}
       </div>
       <div className="w-75 m-auto pt-5">
@@ -217,7 +282,6 @@ const RiskFactor = () => {
           </div>
           <div className="mt-4 risk-bg w-50">
             <Card className="h-100">
-              {/* <Card.Body "> */}
               <Card.Body>
                 {!requiredArray.player2 ? (
                   <div className="align-items-center justify-content-center d-flex h-100 gradient-text text-Shadow">
@@ -231,7 +295,6 @@ const RiskFactor = () => {
                   </div>
                 ) : (
                   <div>
-                    {/* <Card.Body> */}
                     <Card.Title className="gradient-text">
                       {addressSubstring(requiredArray.player2)}
                     </Card.Title>
@@ -240,13 +303,12 @@ const RiskFactor = () => {
                         Risk Factor Selected
                       </div>
                       <div className="mx-4">
-                        <button className="factor-label">
+                        <button disabled={disable} className="factor-label">
                           {requiredArray?.risk2}
                           {requiredArray?.risk2 === "" ? "?" : "%"}
                         </button>
                       </div>
                     </div>
-                    {/* </Card.Body> */}
                   </div>
                 )}
               </Card.Body>
@@ -263,6 +325,7 @@ const RiskFactor = () => {
           </button>
         </div>
       </div>
+      
     </div>
   );
 };

@@ -1,30 +1,33 @@
-import BigNumber from 'bignumber.js'
-import { useEffect, useMemo } from 'react'
-import { useAppSelector } from './store'
-import { State, walletDetail } from './types'
-
-
+import BigNumber from "bignumber.js";
+import { useEffect, useMemo } from "react";
+import { useAppSelector } from "./store";
+import { State, walletDetail } from "./types";
 
 export const useWalletDetail = () => {
-    const wallet = useAppSelector((state) => state?.walletConnect)
+  const wallet = useAppSelector((state) => state?.walletConnect);
 
-    return wallet
-}
+  return wallet;
+};
 
 export const useUserDetail = () => {
-    const detail = useAppSelector((state) => state?.userDetail)
+  const detail = useAppSelector((state) => state?.userDetail);
 
-    return detail
-}
+  return detail;
+};
 
 export const useSocketDetail = () => {
-    const detail = useAppSelector((state) => state?.userDetail.socket)
-    return detail
-}
+  const detail = useAppSelector((state) => state?.userDetail.socket);
+  return detail;
+};
 
 export const useBattleDetail = () => {
-    const detail:any = useAppSelector((state) => state?.userDetail.battleArray)
-    
-    return detail
-}
+  const detail: any = useAppSelector((state) => state?.userDetail.battleArray);
 
+  return detail;
+};
+
+export const useTokenBalance=()=>{
+  const amount: any = useAppSelector((state) => state?.walletConnect.tokenBalance);
+
+  return amount;
+}

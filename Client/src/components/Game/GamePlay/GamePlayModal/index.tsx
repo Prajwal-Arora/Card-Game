@@ -29,7 +29,6 @@ const GamePlayModal = ({
   winnerRound,
 }: any) => {
   const [legionData, setLegionData] = useState<any>();
-  const [previousDiscardedPile, setPreviousDiscardedPile] = useState(0);
 
 
   return (
@@ -42,7 +41,7 @@ const GamePlayModal = ({
         gameWinner={gameWinner}
         account={account}
       />
-      <DiscardedPileModal
+     {openDiscardedPile&& <DiscardedPileModal
         legionData={legionData}
         discardedPile={discardedPile}
         currentSelectedCard={currentSelectedCard}
@@ -51,8 +50,8 @@ const GamePlayModal = ({
         openDiscardedPile={openDiscardedPile}
         ownerAccount={ownerAccount}
         account={account}
-      />
-      <LegionModal
+      />}
+     {openLegion&& <LegionModal
         socket={socket}
         setIsDraw={setIsDraw}
         isDraw={isDraw}
@@ -65,8 +64,8 @@ const GamePlayModal = ({
         account={account}
         setOpenLegion={setOpenLegion}
         openLegion={openLegion}
-      />
-      <EmploratorsModal
+      />}
+      {openExploratoryModal&&<EmploratorsModal
         currentSelectedCard={currentSelectedCard}
         account={account}
         handleChangeTurnCardEmit={handleChangeTurnCardEmit}
@@ -74,7 +73,7 @@ const GamePlayModal = ({
         ownerAccount={ownerAccount}
         setOpenExploratoryModal={setOpenExploratoryModal}
         battleListOpponent={battleListOpponent}
-      />
+      />}
     </>
   );
 };

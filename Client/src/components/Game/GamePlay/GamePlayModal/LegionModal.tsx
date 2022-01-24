@@ -106,7 +106,6 @@ const LegionModal = ({  socket, isDraw, setIsDraw, discardedPile, setLegionData,
 
                     </div>
                 </Modal.Body>
-
             </Modal>
         </div>
     )

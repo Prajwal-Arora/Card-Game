@@ -9,12 +9,12 @@ class Database {
     }
 
     connect() {
-        mongoose.connect('mongodb+srv://admin:<>@game.ppf3d.mongodb.net/game?retryWrites=true&w=majority')
+        mongoose.connect('mongodb+srv://praj:8jUGwGiwLby8VwmF@one.nuysn.mongodb.net/game?retryWrites=true&w=majority')
         .then(() => {
             console.log("database connection successful");
         })
         .catch((err) => {
-            console.log("Error " + err);
+            console.log("Error" + err);
         })
     }
 }
