@@ -1,0 +1,115 @@
+.StackCard-list {
+  width: 100%;
+  display: flex;
+  overflow-x: hidden;
+  padding-left: 2px;
+  padding-right: 7px;
+}
+
+.StackCard-list .Stackcard {
+  position: relative;
+  width: 98%;
+  min-height: 130px;
+  max-height: 120px;
+  overflow: hidden;
+
+  
+}
+
+@media (min-width: 1400px) and (max-width:1520px){
+  .StackCard-list .Stackcard {
+    min-height: 140px!important;
+    max-height: 140px!important;
+  }
+  
+}
+@media (min-width: 1520px) and (max-width:1680px) {
+  .StackCard-list .Stackcard {
+    min-height: 160px!important;
+    max-height: 160px!important;
+  }
+  .Stackcard:not(:first-child) {
+    margin-left: -100px!important;
+}
+  
+}
+
+@media (min-width: 1680px) and (max-width:1872px)  {
+  .StackCard-list .Stackcard {
+    min-height: 170px!important;
+    max-height: 170px!important;
+  }
+  .Stackcard:not(:first-child) {
+    margin-left: -105px!important;
+}
+  
+}
+
+@media (min-width: 1872px) and (max-width:2044px)   {
+  .StackCard-list .Stackcard {
+    min-height: 180px!important;
+    max-height: 180px!important;
+  }
+  .Stackcard:not(:first-child) {
+    margin-left: -105px!important;
+}
+  
+}
+
+@media (min-width: 2044px)  {
+  .StackCard-list .Stackcard {
+    min-height: 200px!important;
+    max-height: 200px!important;
+  }
+  .Stackcard:not(:first-child) {
+    margin-left: -130px!important;
+}
+  
+}
+
+/* .card:hover {
+  transform: translateY(-1rem);
+}
+
+.card:hover ~ .card {
+  transform: translateX(130px);
+} */
+
+
+.Stackcard:not(:first-child) {
+  margin-left: -80px;
+}
+
+/* .card-list {
+  display: flex;
+}
+
+.card-list .card {
+  width: 300px;
+  height: 150px;
+  transform: translateX(calc(var(--varvar) * -60px));
+} */
+
+/* .card-row-selected {
+  width: 130px !important;
+  border-radius: 14px;
+  flex: 0 0 14%;
+  flex-direction: row;
+  margin-bottom: 5px;
+  padding-right: 5px;
+}
+
+.slick-current {
+  margin-right: 28px;
+}
+.slick-active {
+  margin-right: 28px;
+} */
+
+/* .card-stacking {
+  border-radius: 14px !important;
+  flex: 0 0 14%;
+  flex-direction: row;
+  margin-right: -125px;
+  margin-bottom: 5px;
+} */

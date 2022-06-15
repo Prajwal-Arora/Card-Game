@@ -10,6 +10,8 @@ import {
   setScoreRound3,
 } from "../../../store/reducer/userReducer";
 import { useAppSelector } from "../../../store/store";
+import { handleRedirect } from "../../../utils/CommonUsedFunction";
+import { inactiveMessage } from "../../../utils/config/constant/notificationText";
 import { handleGameVictoryScreen, handleRoundEnd } from "../../../utils/SocketCommon";
 
 const ScoreUpdate = ({
@@ -44,7 +46,7 @@ const ScoreUpdate = ({
       );
     }
     if (battleArray.roundP1 === 2 || battleArray.roundP2 === 2) {
-      if(currentRound2){
+      if (currentRound2) {
         dispatch(
           setScoreRound2({
             p1: battleArray.score1,
@@ -52,10 +54,10 @@ const ScoreUpdate = ({
           })
         );
       }
-        
+
     }
     if (battleArray.roundP1 === 3 || battleArray.roundP2 === 3) {
-      if(currentRound3){
+      if (currentRound3) {
         dispatch(
           setScoreRound3({
             p1: battleArray.score1,
@@ -66,31 +68,25 @@ const ScoreUpdate = ({
     }
   };
 
-  const handleRedirect = useCallback(
-    (team) => {
-      history.push({
-        pathname: "/game-winner",
-        search: team,
-      });
-    },
-    [history]
-  );
-
   useEffect(() => {
     // if(battleArray.p1Score ===0 && battleArray.p2Score===0 && !isDraw &&round.roundP1 ===round.roundP2) {
-    socket.on("inactiveWinner", (obj: any) => {
-      const battleObj = JSON.parse(obj);
-      dispatch(setBattleArray(battleObj));
-      if (battleObj.winner_g) {
-        handleGameVictoryScreen(
-          battleObj.winner_g,
-          battleObj.player1,
-          battleObj.team1,
-          handleRedirect
-        );
-      }
-    });
-  // }
+    if (socket) {
+      socket.on("inactiveWinner", (obj: any) => {
+        const battleObj = JSON.parse(obj);
+        dispatch(setBattleArray(battleObj));
+        if (battleObj.winner_g) {
+          handleGameVictoryScreen(
+            battleObj.winner_g,
+            battleObj.player1,
+            battleObj.team1,
+            inactiveMessage,
+            handleRedirect,
+            history
+          );
+        }
+      });
+    }
+    // }
   }, [battleArray.score1, battleArray.score2, isDraw, ownerAccount, socket])
 
   useEffect(() => {
@@ -112,14 +108,14 @@ const ScoreUpdate = ({
   }, [account, ownerAccount, round.P1, round.P2, round.roundP1, round.roundP2]);
 
   useEffect(() => {
-    if(battleArray.roundP1===battleArray.roundP2 && battleArray.roundP1===2){
+    if (battleArray.roundP1 === battleArray.roundP2 && battleArray.roundP1 === 2) {
       setCurrentRound2(true)
     }
-    if(battleArray.roundP1===battleArray.roundP2 && battleArray.roundP1===3){
+    if (battleArray.roundP1 === battleArray.roundP2 && battleArray.roundP1 === 3) {
       setCurrentRound3(true)
     }
     storeRoundScores();
-    
+
   }, [battleArray.roundP1, battleArray.roundP2, battleArray.score1, battleArray.score2]);
 
   const handleEnd = () => {
@@ -143,7 +139,7 @@ const ScoreUpdate = ({
         setFlag2(true);
       }
     }
-  }, [battleArray.cardsP1.length === 0, battleArray.cardsP2.length === 0]);
+  }, [battleArray?.cardsP1, battleArray?.cardsP2]);
 
   return (
     <div className="score-sec">
@@ -155,15 +151,14 @@ const ScoreUpdate = ({
           style={{ right: "25px" }}
           className="position-relative"
           width="35px"
-          src={`/images/${
-            (
+          src={`/images/${(
               account === ownerAccount
                 ? playerBtnColorChange2
                 : playerBtnColorChange1
             )
               ? "red-circle.png"
               : "green-circle.png"
-          }`}
+            }`}
           alt="green-circle"
         />
         <div style={{ marginRight: "35px" }}>{p2Score}</div>
@@ -172,9 +167,8 @@ const ScoreUpdate = ({
         disabled={endClicked || battleArray.score1 === battleArray.score2}
         onClick={handleEnd}
         style={{ marginLeft: "25px" }}
-        className={` ${
-          battleArray.score1 === battleArray.score2 && "cursor-not-allowed"
-        } mt-3 custom-btn d-flex `}
+        className={` ${battleArray.score1 === battleArray.score2 && "cursor-not-allowed"
+          } mt-3 custom-btn d-flex `}
       >
         <div>END</div>
       </button>
@@ -189,15 +183,14 @@ const ScoreUpdate = ({
           style={{ right: "25px" }}
           className="position-relative"
           width="35px"
-          src={`/images/${
-            (
+          src={`/images/${(
               account === ownerAccount
                 ? playerBtnColorChange1
                 : playerBtnColorChange2
             )
               ? "red-circle.png"
               : "green-circle.png"
-          }`}
+            }`}
           alt="red-circle"
         />
         <div style={{ marginRight: "35px" }}>{p1Score}</div>

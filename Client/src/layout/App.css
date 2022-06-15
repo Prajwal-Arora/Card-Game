@@ -12,6 +12,9 @@
         animation: App-logo-spin infinite 20s linear;
     }
 }
+.table-responsive{
+    overflow-x:hidden!important;
+}
 
 .App-header {
     background-color: #282c34;
@@ -52,6 +55,7 @@
 }
 
 .custom-btn {
+    border: 1px solid black;
     padding: 5px 50px;
     background: linear-gradient( 224.89deg, #ffd12b 36.94%, #ffff7b 49.9%, #fff469 62.87%);
     border-radius: 11px;
@@ -62,7 +66,6 @@
     background: -webkit-linear-gradient(#ffd12b 100%, #ffff7b 100%, #fff469 100%);
     -webkit-background-clip: text;
     color: transparent;
-    cursor: pointer;
 }
 
 .modal {
@@ -102,4 +105,8 @@
     font-size: 14px;
     width: 22px;
     height: 22px;
+}
+
+.slick-slide img {
+    display: inline-block!important;
 }

@@ -19,15 +19,23 @@ import OpponentDeck from "./PlayingDeck/OpponentDeck";
 import ScoreUpdate from "./ScoreUpdate";
 import { settings } from "../../../utils/config/constant/constant";
 import GamePlayModal from "./GamePlayModal";
+import { BsInfoLg } from "react-icons/bs";
 import useSound from "use-sound";
-import CardInfoModal from "../CardList/CardInfoModal";
 import PoolTimer from "../../common/PoolTimer";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import {
+  // handleChangeTurnCardEmit,
   handleGameVictoryScreen,
   handleRoundEnd,
+  refreshCardSelection,
+  refreshScreen,
+  roomDelete,
 } from "../../../utils/SocketCommon";
-import { debounce, throttle } from "lodash";
+import { cardDetailModal } from "../../../utils/CommonUsedFunction";
+import { getLocalStore, setLocalStore } from "../../../common/localStorage";
+import { refreshMessage } from "../../../utils/config/constant/notificationText";
+import { putLosses } from "../../../services/apiService/userServices";
+import { apiHandler } from "../../../services/apiService/axios";
 const TurnPlayMusic = require("../../../assets/Sounds/Card Played.mp3");
 
 const GamePlay = () => {
@@ -35,9 +43,9 @@ const GamePlay = () => {
   let history = useHistory();
   const dispatch = useDispatch();
   const [playTurnSound] = useSound(TurnPlayMusic.default);
-  const userDetails = useUserDetail()
+  const userDetails = useUserDetail();
   const [showModal, setModal] = useState<any>("");
-  const [turn, setTurn] = useState(location.state.owner);
+  const [turn, setTurn] = useState();
   const [playedDisabled, setPlayedDisabled] = useState(false);
   const [selectedCardDeck, setSelectedCardDeck] = useState(false);
   const [gameWinner, setGameWinner] = useState("");
@@ -45,7 +53,6 @@ const GamePlay = () => {
   const [currentRound, setCurrentRound] = useState(1);
   const [winnerRound, setWinnerRound] = useState({ p1: "", p2: "" });
   const [battleList, setBattleList] = useState<any>([]);
-  
   const [battleListOpponent, setBattleListOpponent] = useState<any>([]);
   const [currentSelectedCard, setcurrentSelectedCard] = useState({});
   const [openLegion, setOpenLegion] = useState(false);
@@ -60,6 +67,7 @@ const GamePlay = () => {
   const [discardedPile, setDiscardedPile] = useState<any>([]);
   const [isDraw, setIsDraw] = useState(false);
   const [roundModalDraw, setroundModalDraw] = useState(false);
+  const [roundShow, setRoundShow] = useState(false);
   const [resetCounter, setResetCounter] = useState(true);
   const [legion, setLegion] = useState<any>([]);
   const [score, setScore] = useState<any>({
@@ -70,21 +78,70 @@ const GamePlay = () => {
   const walletState: any = useWalletDetail();
   const socket: any = useSocketDetail();
 
-  window.onbeforeunload = function () {
-    return "Your work will be lost.";
+  window.onoffline = function () {
+    toast("Your Internet is disconnected")
+    return true;
   };
+
+  window.onbeforeunload = function () {
+    //  user closes the tab
+    apiHandler(
+      () => putLosses(getLocalStore('userName'))
+    );
+    refreshScreen(location?.state?.owner, socket)
+    roomDelete(socket, location?.state.owner, getLocalStore('userName'))
+   
+    return true
+  }
+
+  window.onload = () => {
+    
+    history.push('/')
+  }
+
+
+  useEffect(() => {
+    if (getLocalStore('battleArray').winner_g) {
+      handleGameVictoryScreen(
+        getLocalStore('battleArray').winner_g,
+        getLocalStore('battleArray').player1,
+        getLocalStore('battleArray').team1,
+        refreshMessage,
+        handleRedirect,
+        history
+      );
+    }
+    refreshCardSelection(dispatch, socket, history)
+  }, [socket, getLocalStore('battleArray')]);
+
+
 
   useEffect(() => {
     setResetCounter(false);
     setTimeout(() => {
       setResetCounter(true);
     }, 1);
-  }, [userDetails.eventClickable]);
+  }, [userDetails.eventClickable, battleList?.length, battleArray?.cardsP1?.length, battleArray?.cardsP2?.length]);
+
+  const stackedCards = (cardDeck: any) => {
+    let deck: any = [];
+    let uniqueChars = cardDeck.map((i: any) => i.name).filter((c: any, index: any, ar: any) => {
+      return ar.indexOf(c) === index;
+    });
+    const c = uniqueChars?.map((name: any) => {
+      const a = cardDeck?.filter((current: any) => {
+        return current?.name === name;
+      });
+      deck.push(a);
+    });
+    setPlayedDeck(deck);
+  };
 
   useEffect(() => {
+    setLocalStore('battleArray', battleArray)
     handleUpdateBattleArray();
-
-    if (location.state.owner === walletState.accounts[0]) {
+    setTurn(battleArray.turn);
+    if (location?.state?.owner === walletState.userName) {
       setBattleList(battleArray.cardsP1);
       setBattleListOpponent(battleArray.cardsP2);
       setDiscardedPile(battleArray.discardedCards1);
@@ -107,7 +164,7 @@ const GamePlay = () => {
     [history]
   );
 
-  const isFilibusterPresentDeck=(count:number)=>{
+  const isFilibusterPresentP1Deck = (count: number) => {
     if (count > 0) {
       if (battleArray.team1 === "Remus") {
         setFilibusterPresentRemus(true);
@@ -115,8 +172,7 @@ const GamePlay = () => {
       if (battleArray.team1 === "Romulus") {
         setFilibusterPresentRomulus(true);
       }
-    }
-    else{
+    } else {
       if (battleArray.team1 === "Remus") {
         setFilibusterPresentRemus(false);
       }
@@ -124,64 +180,74 @@ const GamePlay = () => {
         setFilibusterPresentRomulus(false);
       }
     }
-  }
+  };
 
-  useEffect(() => {
-    handleGameVictoryScreen(
-      gameWinner,
-      battleArray.player1,
-      battleArray.team1,
-      handleRedirect
-    );
-  }, [currentSelectedCard, gameWinner, turn]);
-
-  const handleChangeTurnCardEmit = (array: any[]) => {
-    socket.emit("cardClick", JSON.stringify(array));
-    if (round.roundP1 === round.roundP2) {
-      socket.emit("changeTurn", JSON.stringify(array));
-      dispatch(setEventClickable(false))
-      // setFlag(false)
+  const isFilibusterPresentP2Deck = (count: number) => {
+    if (count > 0) {
+      if (battleArray.team1 === "Remus") {
+        setFilibusterPresentRomulus(true);
+      }
+      if (battleArray.team1 === "Romulus") {
+        setFilibusterPresentRemus(true);
+      }
+    } else {
+      if (battleArray.team1 === "Remus") {
+        setFilibusterPresentRomulus(false);
+      }
+      if (battleArray.team1 === "Romulus") {
+        setFilibusterPresentRemus(false);
+      }
     }
   };
 
   useEffect(() => {
-    dispatch(setEventClickable(true))
-    // setFlag(true)
-  }, [turn])
+    if (
+      round.roundP1 === round.roundP2 &&
+      round.roundP1 !== 1 &&
+      round.roundP2 !== 1
+    ) {
+      setRoundShow(true);
+    }
+  }, [round.roundP1, round.roundP2]);
+
+
+
+  useEffect(() => {
+    dispatch(setEventClickable(true));
+  }, [turn]);
 
   //Check filibuster
   useEffect(() => {
-    
-    if (location.state.owner === walletState.accounts[0]) {
-      const count = battleArray.playedCardsP2.filter(
+    if (location?.state?.owner === walletState?.userName) {
+      const count = battleArray?.playedCardsP2?.filter(
         (item: any) => item.name === "Filibuster"
       ).length;
-      isFilibusterPresentDeck(count)
+      isFilibusterPresentP1Deck(count);
     } else {
-      const count = battleArray.playedCardsP1.filter(
+      const count = battleArray?.playedCardsP1?.filter(
         (item: any) => item.name === "Filibuster"
       ).length;
-      isFilibusterPresentDeck(count)
+      isFilibusterPresentP2Deck(count);
     }
   }, [
-    battleArray.cardsP1,
-    battleArray.playedCardsP1,
-    battleArray.playedCardsP2,
-    battleArray.team1,
-    location.state.owner,
-    walletState.accounts,
+    battleArray?.round,
+    battleArray?.cardsP1,
+    battleArray?.playedCardsP1,
+    battleArray?.playedCardsP2,
+    battleArray?.team1,
+    location?.state?.owner,
+    walletState.userName,
   ]);
 
   const delayCardPlay = () => {
-    if (location.state.owner===walletState.accounts[0]) {
+    if (location.state.owner === walletState.userName) {
       const arr = [location.state.owner];
       socket.emit("inactive", JSON.stringify(arr));
-    }
-    else{
+    } else {
       handleRoundEnd(
         currentSelectedCard,
         location.state.owner,
-        walletState.accounts[0],
+        walletState.userName,
         turn,
         socket
       );
@@ -189,11 +255,20 @@ const GamePlay = () => {
     dispatch(setEndClick(true));
   };
 
+  const handleChangeTurnCardEmit = (array: any[]) => {
+    socket.emit("cardClick", JSON.stringify(array));
+    if (round.roundP1 === round.roundP2) {
+      socket.emit("changeTurn", JSON.stringify(array));
+      dispatch(setEventClickable(false));
+      // setFlag(false)
+    }
+  };
+
   const handleRemove = (event: any, data: any) => {
     // setFlag(false);
     //When player played his turn
     playTurnSound();
-    if (walletState.accounts[0] === turn) {
+    if (walletState.userName === turn) {
       const onlyUniversalCard =
         opponentPlayedDeck.filter(
           (item: any) =>
@@ -203,7 +278,7 @@ const GamePlay = () => {
       setPlayedDisabled(false);
       setSelectedCardDeck(false);
       setcurrentSelectedCard(data);
-      const array = [data, location.state.owner, walletState.accounts[0], {}];
+      const array = [data, location.state.owner, walletState.userName, {}];
 
       if (
         data.ability !== "Pila" &&
@@ -216,7 +291,6 @@ const GamePlay = () => {
         data.ability !== "Master_Spy" &&
         data.ability !== "Diplomat" &&
         data.ability !== "Reinforcements" &&
-        data.ability !== "Exploratores" &&
         data.ability !== "Eyes_on_the_Prize" &&
         data.ability !== "Praetorian_Guard"
       ) {
@@ -227,9 +301,9 @@ const GamePlay = () => {
       if (data.ability === "Pila") {
         //for Javeline
         if (opponentPlayedDeck.length !== 0 && !onlyUniversalCard) {
-          setPlayedDeck([...playedDeck, data]);
+          // setPlayedDeck([...playedDeck, data]);
           const cardMoreThan3 =
-            opponentPlayedDeck.filter((item: any) => item.strength > 3)
+            opponentPlayedDeck.filter((item: any) => item.strength > data.strength)
               .length ===
             opponentPlayedDeck.filter(
               (item: any) =>
@@ -251,7 +325,7 @@ const GamePlay = () => {
       if (data.ability === "Son_of_the_Wolf") {
         if (opponentPlayedDeck.length !== 0 && !onlyUniversalCard) {
           toast("Select enemy card to discard");
-          setPlayedDeck([...playedDeck, data]);
+          // setPlayedDeck([...playedDeck, data]);
           setPlayedDisabled(true);
         } else {
           handleChangeTurnCardEmit(array);
@@ -263,7 +337,7 @@ const GamePlay = () => {
         } else {
           if (opponentPlayedDeck.length !== 0 && !onlyUniversalCard) {
             toast("Select enemy class to half");
-            setPlayedDeck([...playedDeck, data]);
+            // setPlayedDeck([...playedDeck, data]);
             setPlayedDisabled(true);
           } else {
             handleChangeTurnCardEmit(array);
@@ -296,7 +370,7 @@ const GamePlay = () => {
                 const arr = [
                   data,
                   location.state.owner,
-                  walletState.accounts[0],
+                  walletState.userName,
                   {},
                 ];
                 handleChangeTurnCardEmit(arr);
@@ -304,7 +378,7 @@ const GamePlay = () => {
                 const arr = [
                   data,
                   location.state.owner,
-                  walletState.accounts[0],
+                  walletState.userName,
                   reqArr,
                 ];
                 handleChangeTurnCardEmit(arr);
@@ -312,8 +386,8 @@ const GamePlay = () => {
 
               // setPlayedDisabled(true)
             } else {
-              // toast("Pick the enemy troop with the lowest strength on the field and move them to your side.")
-              setPlayedDeck([...playedDeck, data]);
+              toast("Pick the enemy troop with the lowest strength on the field and move them to your side.")
+              // setPlayedDeck([...playedDeck, data]);
               setPlayedDisabled(true);
             }
           } else {
@@ -335,7 +409,7 @@ const GamePlay = () => {
       }
       if (data.ability === "Dead_Eye") {
         const cardMoreThan6 =
-          opponentPlayedDeck.filter((item: any) => item.strength > 6).length ===
+          opponentPlayedDeck.filter((item: any) => item.strength > data.strength).length ===
           opponentPlayedDeck.filter(
             (item: any) =>
               item.class !== "Utility" && item.class !== "Status_Effect"
@@ -346,7 +420,7 @@ const GamePlay = () => {
           !onlyUniversalCard
         ) {
           toast("Select enemy card to discard");
-          setPlayedDeck([...playedDeck, data]);
+          // setPlayedDeck([...playedDeck, data]);
           setPlayedDisabled(true);
         } else {
           handleChangeTurnCardEmit(array);
@@ -354,14 +428,13 @@ const GamePlay = () => {
       }
       if (data.ability === "Our_Fearless_Leader") {
         handleChangeTurnCardEmit(array);
-        //  setPlayedDisabled(false)
       }
       if (data.ability === "Master_Spy") {
         if (legion.length === 0 && discardedPile.length === 0) {
           const arr = [
             data,
             location.state.owner,
-            walletState.accounts[0],
+            walletState.userName,
             {},
             {},
           ];
@@ -396,7 +469,7 @@ const GamePlay = () => {
         }
       }
       if (data.ability === "Eyes_on_the_Prize") {
-        if (battleListOpponent.length !== 0) {
+        if (battleListOpponent.length > 1) {
           toast("Select two cards to view and click to again discard one");
           setOpenExploratoryModal(true);
         } else {
@@ -414,20 +487,6 @@ const GamePlay = () => {
     }
   };
 
-  const modal = (items: any) => {
-    return (
-      <>
-        <CardInfoModal
-          css={{
-            top: "1rem",
-            left: "1rem",
-            borderRadius: "24px",
-          }}
-          battleCard={items}
-        />
-      </>
-    );
-  };
   const handleSetBattleState = (battleObj: {
     playedCardsP1: any;
     score1: any;
@@ -440,8 +499,10 @@ const GamePlay = () => {
     legion1: any;
     legion2: any;
   }) => {
-    if (location.state.owner === walletState.accounts[0]) {
-      setPlayedDeck(battleObj.playedCardsP1);
+    setLocalStore('battleArray', battleObj)
+    if (location.state.owner === walletState.userName) {
+      stackedCards(battleObj.playedCardsP1);
+      // setPlayedDeck(battleObj.playedCardsP1);
       setDiscardedPile(battleObj?.discardedCards1);
       setLegion(battleObj?.legion1);
       setScore({
@@ -452,7 +513,8 @@ const GamePlay = () => {
       setBattleListOpponent(battleObj.cardsP2);
       setOpponentPlayedDeck(battleObj.playedCardsP2);
     } else {
-      setPlayedDeck(battleObj.playedCardsP2);
+      stackedCards(battleObj.playedCardsP2);
+      // setPlayedDeck(battleObj.playedCardsP1);
       setLegion(battleObj?.legion2);
       setDiscardedPile(battleObj?.discardedCards2);
       setScore({
@@ -482,74 +544,68 @@ const GamePlay = () => {
   };
 
   const handleUpdateBattleArray = () => {
-    socket.on("afterEnd", (obj: any) => {
-      const battleObj = JSON.parse(obj);
-      console.log(battleObj, "After End");
-      dispatch(setBattleArray(battleObj));
-      setGameWinner(battleObj.winner_g);
-      checkCurrentRound(battleObj.roundP1, battleObj.roundP2);
-      setround({
-        roundP1: battleObj.roundP1,
-        roundP2: battleObj.roundP2,
+    if (socket) {
+      socket.on("draw", (obj: any) => {
+        setTimerOff(true);
+        setIsDraw(true);
+        setroundModalDraw(true);
+        const battleObj = JSON.parse(obj);
+        handleSetBattleState(battleObj);
+        dispatch(setBattleArray(battleObj));
       });
-      setWinnerRound({
-        p1: battleObj.winner_r1,
-        p2: battleObj.winner_r2,
+
+      socket.on("d2", (obj: any) => {
+        const battleObj = JSON.parse(obj);
+        handleSetBattleState(battleObj);
+        dispatch(setBattleArray(battleObj));
+        if (
+          battleObj.playedCardsP1.length !== 0 &&
+          battleObj.playedCardsP2.length !== 0
+        ) {
+          setTimeout(() => {
+            const arr = [location.state.owner];
+            socket.emit("new", JSON.stringify(arr));
+          }, 2500);
+        }
       });
-      handleSetBattleState(battleObj);
-    });
-    if (userDetails.eventClickable === true) {
-      socket.on("updater", (obj: any) => {
+
+      socket.on("afterEnd", (obj: any) => {
         const battleObj = JSON.parse(obj);
         dispatch(setBattleArray(battleObj));
-        console.log(
-          battleObj,
-          "----------------------CLICK-------------------------"
-        );
+        setGameWinner(battleObj.winner_g);
+        checkCurrentRound(battleObj.roundP1, battleObj.roundP2);
+        setround({
+          roundP1: battleObj.roundP1,
+          roundP2: battleObj.roundP2,
+        });
+        setWinnerRound({
+          p1: battleObj.winner_r1,
+          p2: battleObj.winner_r2,
+        });
         handleSetBattleState(battleObj);
-        // setFlag(true);
       });
 
-      socket.on("turnChanged", (obj: any) => {
-        const battleObj = JSON.parse(obj);
-        console.log(
-          battleObj,
-          "----------------------TURN-------------------------"
-        );
-        setTurn(battleObj.turn);
-      });
-    };
-  }
+      if (userDetails.eventClickable === true && socket) {
+        socket.on("updater", (obj: any) => {
+          const battleObj = JSON.parse(obj);
+          dispatch(setBattleArray(battleObj));
+          setLocalStore('battleArray', battleObj)
+          handleSetBattleState(battleObj);
+          // setFlag(true);
+        });
 
-
-  socket.on("draw", (obj: any) => {
-    setTimerOff(true);
-    setIsDraw(true);
-    setroundModalDraw(true);
-    const battleObj = JSON.parse(obj);
-    dispatch(setBattleArray(battleObj));
-  });
-
-  socket.on("d2", (obj: any) => {
-    const battleObj = JSON.parse(obj);
-    handleSetBattleState(battleObj);
-    dispatch(setBattleArray(battleObj));
-    if (
-      battleObj.playedCardsP1.length !== 0 &&
-      battleObj.playedCardsP2.length !== 0
-    ) {
-      setTimeout(() => {
-        const arr = [location.state.owner];
-        socket.emit("new", JSON.stringify(arr));
-      }, 2500);
+        socket.on("turnChanged", (obj: any) => {
+          const battleObj = JSON.parse(obj);
+          setTurn(battleObj.turn);
+        });
+      }
     }
-  });
-
-
+  };
 
   const handleHover = (items: any) => {
-    setModal(modal(items));
+    setModal(cardDetailModal(items));
   };
+
   const handleLeave = () => {
     setModal("");
   };
@@ -560,7 +616,7 @@ const GamePlay = () => {
         <div className=" custom-btn-round d-flex align-items-center justify-content-center">
           <div>Round {currentRound}</div>
         </div>
-        {turn !== walletState.accounts[0] ? (
+        {turn !== walletState.userName ? (
           <div className="opponent-turn-wait">
             <div className="d-flex justify-content-center align-items-center opponent-playing">
               <div className="mx-3" style={{ color: "yellow" }}>
@@ -568,7 +624,7 @@ const GamePlay = () => {
               </div>
             </div>
           </div>
-        ) : resetCounter && !timerOff ? (
+        ) : resetCounter && !timerOff && !roundShow ? (
           <div className="opponent-turn-wait">
             <div className="d-flex justify-content-center align-items-center">
               <PoolTimer time={90} response={delayCardPlay} />
@@ -578,9 +634,9 @@ const GamePlay = () => {
           ""
         )}
         <div className="d-flex justify-content-end opponent-card-left">
-          {battleListOpponent.length}
+          {battleListOpponent?.length}
         </div>
-        <div className="opponet-sec mt-2" style={{ height: "90px" }}>
+        <div className="opponet-sec mt-2" style={{ height: "105px", marginBottom: '5px' }}>
           <OpponentDeck
             playTurnSound={playTurnSound}
             filibusterPresentRemus={filibusterPresentRemus}
@@ -592,14 +648,13 @@ const GamePlay = () => {
             turn={turn}
             setSelectedCardDeck={setSelectedCardDeck}
             selectedCardDeck={selectedCardDeck}
-            ownerAccount={location.state.owner}
-            account={walletState.accounts[0]}
+            ownerAccount={location?.state?.owner}
+            account={walletState?.userName}
             socket={socket}
             currentSelectedCard={currentSelectedCard}
             opponentPlayedDeck={opponentPlayedDeck}
           />
         </div>
-
         <ScoreUpdate
           isDraw={isDraw}
           currentSelectedCard={currentSelectedCard}
@@ -607,8 +662,8 @@ const GamePlay = () => {
           round={round}
           p1Score={score.p1Score}
           p2Score={score.p2Score}
-          ownerAccount={location.state.owner}
-          account={walletState.accounts[0]}
+          ownerAccount={location?.state?.owner}
+          account={walletState.userName}
           socket={socket}
         />
         <UserPlayedDeck
@@ -620,26 +675,25 @@ const GamePlay = () => {
           currentSelectedCard={currentSelectedCard}
           battleList={battleList}
           playedDeck={playedDeck}
-          ownerAccount={location.state.owner}
-          account={walletState.accounts[0]}
+          ownerAccount={location?.state?.owner}
+          account={walletState.userName}
           socket={socket}
           opponentPlayedDeck={opponentPlayedDeck}
         />
-        {userDetails.eventClickable ? (
+        {
           <div className="game-play-corousel">
-            <Slider {...settings}>
-              {battleList?.map((items: any) => (
-                <div key={items.id}>
-                  {(playedDisabled === false || selectedCardDeck) &&
-                    turn === walletState.accounts[0] ? (
+            < Slider {...settings}>
+              {battleList?.length!==0 ?
+                battleList?.map((items: any) => (
+                  <div key={items.id}>
                     <div
                       className="p-game-play"
                       onMouseLeave={() => handleLeave()}
                     >
                       <div
-                        className={`card bottom-card-row relative ${turn === walletState.accounts[0]
-                            ? "border-style"
-                            : "border-style-not-allowed"
+                        className={`card bottom-card-row position-relative ${turn === walletState.userName
+                          ? "border-style"
+                          : "border-style-not-allowed"
                           }`}
                         key={items.id}
                       >
@@ -647,130 +701,61 @@ const GamePlay = () => {
                           className="hover-detail-gplay"
                           onMouseOver={() => handleHover(items)}
                         >
-                          i
+                          <BsInfoLg/>
                         </div>
                         <img
                           src={items.battleCard}
+                          className={items.isNft ? "nft-game-card" : ""}
                           alt="battle-cards"
-                          onClick={(event) => handleRemove(event, items)}
+                          onClick={(event) =>
+                            (playedDisabled === false || selectedCardDeck) &&
+                              turn === walletState.userName
+                              ? userDetails.eventClickable &&
+                              handleRemove(event, items)
+                              : ""
+                          }
                         />
                       </div>
                     </div>
-                  ) : (
-                    <div
-                      className="p-game-play"
-                      onMouseLeave={() => handleLeave()}
-                    >
-                      {" "}
-                      <div
-                        className="card border-style bottom-card-row relative p-game-play"
-                        key={items.id}
-                      >
-                        <div
-                          className="hover-detail-gplay"
-                          onMouseOver={() => handleHover(items)}
-                        >
-                          i
-                        </div>
-                        <img
-                          style={{ cursor: "not-allowed", width: "100%" }}
-                          src={items.battleCard}
-                          alt="battle-cards"
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
+
+                  </div>
+                )) : (
+                  <div style={{height:'16vh'}}>
+                  </div>
+                )}
             </Slider>
             <div className="gplay-modal">{showModal}</div>
           </div>
-        ) : (
-          <>
-            {" "}
-            <div className="game-play-corousel">
-              <Slider {...settings}>
-                {battleList?.map((items: any) => (
-                  <div key={items.id}>
-                    {(playedDisabled === false || selectedCardDeck) &&
-                      turn === walletState.accounts[0] ? (
-                      <div
-                        className="p-game-play"
-                        onMouseLeave={() => handleLeave()}
-                      >
-                        <div
-                          className={`card bottom-card-row relative ${turn === walletState.accounts[0]
-                              ? "border-style"
-                              : "border-style-not-allowed"
-                            }`}
-                          key={items.id}
-                        >
-                          <div
-                            className="hover-detail-gplay"
-                            onMouseOver={() => handleHover(items)}
-                          >
-                            i
-                          </div>
-                          <img src={items.battleCard} alt="battle-cards" />
-                        </div>
-                      </div>
-                    ) : (
-                      <div
-                        className="p-game-play"
-                        onMouseLeave={() => handleLeave()}
-                      >
-                        {" "}
-                        <div
-                          className="card border-style bottom-card-row relative p-game-play"
-                          key={items.id}
-                        >
-                          <div
-                            className="hover-detail-gplay"
-                            onMouseOver={() => handleHover(items)}
-                          >
-                            i
-                          </div>
-                          <img
-                            style={{ cursor: "not-allowed", width: "100%" }}
-                            src={items.battleCard}
-                            alt="battle-cards"
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </Slider>
-              <div className="gplay-modal">{showModal}</div>
-            </div>
-          </>
-        )}
+        }
         <div className="d-flex justify-content-end user-card-left">
-          {battleList.length}
+          {battleList?.length}
         </div>
-        <GamePlayModal
-          socket={socket}
-          roundModalDraw={roundModalDraw}
-          battleListOpponent={battleListOpponent}
-          openExploratoryModal={openExploratoryModal}
-          setOpenExploratoryModal={setOpenExploratoryModal}
-          opponentPlayedDeck={opponentPlayedDeck}
-          legion={legion}
-          discardedPile={discardedPile}
-          currentSelectedCard={currentSelectedCard}
-          handleChangeTurnCardEmit={handleChangeTurnCardEmit}
-          setOpenLegion={setOpenLegion}
-          openLegion={openLegion}
-          setOpenDiscardedPile={setOpenDiscardedPile}
-          openDiscardedPile={openDiscardedPile}
-          ownerAccount={location.state.owner}
-          winnerRound={winnerRound}
-          round={round}
-          gameWinner={gameWinner}
-          account={walletState.accounts[0]}
-          setIsDraw={setIsDraw}
-          isDraw={isDraw}
-        />
+        {socket && (
+          <GamePlayModal
+            socket={socket}
+            setRoundShow={setRoundShow}
+            roundShow={roundShow}
+            roundModalDraw={roundModalDraw}
+            battleListOpponent={battleListOpponent}
+            openExploratoryModal={openExploratoryModal}
+            setOpenExploratoryModal={setOpenExploratoryModal}
+            opponentPlayedDeck={opponentPlayedDeck}
+            legion={legion}
+            discardedPile={discardedPile}
+            currentSelectedCard={currentSelectedCard}
+            handleChangeTurnCardEmit={handleChangeTurnCardEmit}
+            setOpenLegion={setOpenLegion}
+            openLegion={openLegion}
+            setOpenDiscardedPile={setOpenDiscardedPile}
+            openDiscardedPile={openDiscardedPile}
+            ownerAccount={location?.state?.owner}
+            winnerRound={winnerRound}
+            round={round}
+            account={walletState.userName}
+            setIsDraw={setIsDraw}
+            isDraw={isDraw}
+          />
+        )}
         {/* <ToastContainer toastClassName="toastr" progressClassName="toastProgress"/> */}
       </div>
     </>

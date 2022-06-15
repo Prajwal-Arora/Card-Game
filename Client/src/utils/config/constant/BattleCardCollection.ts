@@ -5,22 +5,22 @@ export const RomulusCards = [
         class: "Ranged",
         display_class: "Ranged",
         name: "Archer",
-        disPlay_name: "Archer",
+        display_name: "Archer",
         strength: 3,
         ability: "Volley",
-        ability_desc: "Volley - When you play the archer card, all other archers from your hand get played automatically.",
+        ability_desc: "Volley - Automatically play all other Arhcers from your hand and legion.",
         lock: false
     },
     {
         id: 2,
-        battleCard: "https://playassets.s3.eu-west-1.amazonaws.com/ramulus-cards/vEmpire-card-Archer.jpg",
+        battleCard: "/battle-cards/romulus-cards/vEmpire-card-Archer.png",
         class: "Ranged",
         display_class: "Ranged",
         name: "Archer",
-        disPlay_name: "Archer",
+        display_name: "Archer",
         strength: 3,
         ability: "Volley",
-        ability_desc: "Volley - When you play the archer card, all other archers from your hand get played automatically.",
+        ability_desc: "Volley - Automatically play all other Arhcers from your hand and legion.",
         lock: false
     },
     {
@@ -29,10 +29,10 @@ export const RomulusCards = [
         class: "Ranged",
         display_class: "Ranged",
         name: "Archer",
-        disPlay_name: "Archer",
+        display_name: "Archer",
         strength: 3,
         ability: "Volley",
-        ability_desc: "Volley - When you play the archer card, all other archers from your hand get played automatically.",
+        ability_desc: "Volley - Automatically play all other Arhcers from your hand and legion.",
         lock: false
     },
     {
@@ -42,7 +42,7 @@ export const RomulusCards = [
         class: "Ranged",
         display_class: "Ranged",
         name: "Mounted_Archer",
-        disPlay_name: "Mounted Archer",
+        display_name: "Mounted Archer",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -54,7 +54,7 @@ export const RomulusCards = [
         class: "Ranged",
         display_class: "Ranged",
         name: "Mounted_Archer",
-        disPlay_name: "Mounted Archer",
+        display_name: "Mounted Archer",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -66,7 +66,7 @@ export const RomulusCards = [
         class: "Ranged",
         display_class: "Ranged",
         name: "Mounted_Archer",
-        disPlay_name: "Mounted Archer",
+        display_name: "Mounted Archer",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -78,7 +78,7 @@ export const RomulusCards = [
         class: "Politician",
         display_class: "Politician",
         name: "Aristocrat",
-        disPlay_name: "Aristocrat",
+        display_name: "Aristocrat",
         ability: "Diplomat",
         ability_desc: "Diplomat - Pick a card out of your legion and put it in your hand.",
         lock: false
@@ -90,7 +90,7 @@ export const RomulusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Barbarians",
-        disPlay_name: "Barbarians",
+        display_name: "Barbarians",
         ability: "Wild_Animals",
         ability_desc: "Wild Animals - Remove 1 Strength from your opponent’s Light Soldier class for each Barbarian in play.",
         lock: false
@@ -102,7 +102,7 @@ export const RomulusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Barbarians",
-        disPlay_name: "Barbarians",
+        display_name: "Barbarians",
         ability: "Wild_Animals",
         ability_desc: "Wild Animals - Remove 1 Strength from your opponent’s Light Soldier class for each Barbarian in play.",
         lock: false
@@ -114,7 +114,7 @@ export const RomulusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Barbarians",
-        disPlay_name: "Barbarians",
+        display_name: "Barbarians",
         ability: "Wild_Animals",
         ability_desc: "Wild Animals - Remove 1 Strength from your opponent’s Light Soldier class for each Barbarian in play.",
         lock: false
@@ -126,7 +126,7 @@ export const RomulusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Barbarians",
-        disPlay_name: "Barbarians",
+        display_name: "Barbarians",
         ability: "Wild_Animals",
         ability_desc: "Wild Animals - Remove 1 Strength from your opponent’s Light Soldier class for each Barbarian in play.",
         lock: false
@@ -138,7 +138,7 @@ export const RomulusCards = [
         class: "Politician",
         display_class: "Politician",
         name: "Consul",
-        disPlay_name: "Consul",
+        display_name: "Consul",
         ability: "Man_of_the_People",
         ability_desc: "Man of the People - Play on top of any other class to double their overall strength.",
         lock: false
@@ -150,7 +150,7 @@ export const RomulusCards = [
         class: "Mounted_Soldier",
         display_class: "Mounted Soldier",
         name: "Decaea",
-        disPlay_name: "Decaea",
+        display_name: "Decaea",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -162,7 +162,7 @@ export const RomulusCards = [
         class: "Scout",
         display_class: "Scout",
         name: "Exploratores",
-        disPlay_name: "Exploratores",
+        display_name: "Exploratores",
         ability: "Eyes_on_the_Prize",
         ability_desc: "Eyes on the Prize - Choose two cards from your opponent's hand and look at them, Discard one.",
         lock: false
@@ -174,7 +174,7 @@ export const RomulusCards = [
         class: "Scout",
         display_class: "Scout",
         name: "Exploratores",
-        disPlay_name: "Exploratores",
+        display_name: "Exploratores",
         ability: "Eyes_on_the_Prize",
         ability_desc: "Eyes on the Prize - Choose two cards from your opponent's hand and look at them, Discard one.",
         lock: false
@@ -186,7 +186,7 @@ export const RomulusCards = [
         class: "Mounted_Troops",
         display_class: "Mounted Troops",
         name: "Heavy_Cavalry",
-        disPlay_name: "Heavy Cavalry",
+        display_name: "Heavy Cavalry",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -198,7 +198,7 @@ export const RomulusCards = [
         class: "Mounted_Troops",
         display_class: "Mounted Troops",
         name: "Heavy_Cavalry",
-        disPlay_name: "Heavy Cavalry",
+        display_name: "Heavy Cavalry",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -210,7 +210,7 @@ export const RomulusCards = [
         class: "Mounted_Troops",
         display_class: "Mounted Troops",
         name: "Heavy_Cavalry",
-        disPlay_name: "Heavy Cavalry",
+        display_name: "Heavy Cavalry",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -222,7 +222,7 @@ export const RomulusCards = [
         class: "Ranged",
         display_class: "Ranged",
         name: "Javelin",
-        disPlay_name: "Javelin",
+        display_name: "Javelin",
         ability: "Pila",
         ability_desc: "Pila - When you play a javelin card, discard an opponent's card lower or equal to the strength of 3.Discard the Javelin after use.",
         lock: false
@@ -234,7 +234,7 @@ export const RomulusCards = [
         class: "Ranged",
         display_class: "Ranged",
         name: "Javelin",
-        disPlay_name: "Javelin",
+        display_name: "Javelin",
         ability: "Pila",
         ability_desc: "Pila - When you play a javelin card, discard an opponent's card lower or equal to the strength of 3.Discard the Javelin after use.",
         lock: false
@@ -246,21 +246,21 @@ export const RomulusCards = [
         class: "Ranged",
         display_class: "Ranged",
         name: "Javelin",
-        disPlay_name: "Javelin",
+        display_name: "Javelin",
         ability: "Pila",
         ability_desc: "Pila - When you play a javelin card, discard an opponent's card lower or equal to the strength of 3.Discard the Javelin after use.",
         lock: false
     },
     {
         id: 22,
-        battleCard: 'https://playassets.s3.eu-west-1.amazonaws.com/ramulus-cards/vEmpire-card-Julius.jpg',
+        battleCard: '/battle-cards/romulus-cards/vEmpire-card-Julius.jpg',
         strength: 5,
         class: "Heavy_Soldier",
         display_class: "Heavy Soldier",
         name: "Julius",
-        disPlay_name: "Julius",
+        display_name: "Julius",
         ability: "Strategist",
-        ability_desc: " Strategist - Increase the strength of Heavy Soldiers by 25% (rounding up).",
+        ability_desc: " Strategist - Increase the strength of Heavy Soldiers by 50% .",
         lock: false
     },
     {
@@ -270,7 +270,7 @@ export const RomulusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Light_Infantry",
-        disPlay_name: "Light Infantry",
+        display_name: "Light Infantry",
         ability: "Morale_Boost",
         ability_desc: "Morale Boost - For every light infantry card in play, double their strength.",
         lock: false
@@ -282,7 +282,7 @@ export const RomulusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Light_Infantry",
-        disPlay_name: "Light Infantry",
+        display_name: "Light Infantry",
         ability: "Morale_Boost",
         ability_desc: "Morale Boost - For every light infantry card in play, double their strength.",
         lock: false
@@ -294,7 +294,7 @@ export const RomulusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Light_Infantry",
-        disPlay_name: "Light Infantry",
+        display_name: "Light Infantry",
         ability: "Morale_Boost",
         ability_desc: "None",
         lock: false
@@ -307,7 +307,7 @@ export const RomulusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Light_Infantry",
-        disPlay_name: "Light Infantry",
+        display_name: "Light Infantry",
         ability: "Morale_Boost",
         ability_desc: "Morale Boost - For every light infantry card in play, double their strength.",
         lock: false
@@ -319,7 +319,7 @@ export const RomulusCards = [
         class: "Heavy_Soldier",
         display_class: "Heavy Soldier",
         name: "Principes",
-        disPlay_name: "Principes",
+        display_name: "Principes",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -331,7 +331,7 @@ export const RomulusCards = [
         class: "Heavy_Soldier",
         display_class: "Heavy Soldier",
         name: "Principes",
-        disPlay_name: "Principes",
+        display_name: "Principes",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -343,7 +343,7 @@ export const RomulusCards = [
         class: "Heavy_Soldier",
         display_class: "Heavy Soldier",
         name: "Principes",
-        disPlay_name: "Principes",
+        display_name: "Principes",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -354,7 +354,7 @@ export const RomulusCards = [
         strength: 10,
         class: "Heavy_Soldier",
         display_class: "Heavy Soldier",
-        disPlay_name: "Romulus",
+        display_name: "Romulus",
         name: "Romulus",
         ability: "Our_Fearless_Leader",
         ability_desc: "Our Fearless Leader - Add 1 strength for every Romulus card on the field.",
@@ -367,7 +367,7 @@ export const RomulusCards = [
         class: "Heavy_Soldier",
         display_class: "Heavy Soldier",
         name: "Scipio",
-        disPlay_name: "Scipio",
+        display_name: "Scipio",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -379,7 +379,7 @@ export const RomulusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Scorpius",
-        disPlay_name: "Scorpius",
+        display_name: "Scorpius",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -391,7 +391,7 @@ export const RomulusCards = [
         class: "Ranged",
         display_class: "Ranged",
         name: "Tibia",
-        disPlay_name: "Tibia",
+        display_name: "Tibia",
         ability: "Dead_Eye",
         ability_desc: " Dead Eye - Send an enemy of up to equal strength to your opponents discard pile.",
         lock: false
@@ -403,7 +403,7 @@ export const RomulusCards = [
         class: "Heavy_Soldier",
         display_class: "Heavy Soldier",
         name: "Tortuga",
-        disPlay_name: "Tortuga",
+        display_name: "Tortuga",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -415,7 +415,7 @@ export const RomulusCards = [
         class: "Heavy_Soldier",
         display_class: "Heavy Soldier",
         name: "Tortuga",
-        disPlay_name: "Tortuga",
+        display_name: "Tortuga",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -427,7 +427,7 @@ export const RomulusCards = [
         class: "Heavy_Soldier",
         display_class: "Heavy Soldier",
         name: "Tortuga",
-        disPlay_name: "Tortuga",
+        display_name: "Tortuga",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -439,7 +439,7 @@ export const RomulusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Triarii",
-        disPlay_name: "Triarii",
+        display_name: "Triarii",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -452,7 +452,7 @@ export const RomulusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Triarii",
-        disPlay_name: "Triarii",
+        display_name: "Triarii",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -464,7 +464,7 @@ export const RomulusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Triarii",
-        disPlay_name: "Triarii",
+        display_name: "Triarii",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -476,7 +476,7 @@ export const RomulusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Triarii",
-        disPlay_name: "Triarii",
+        display_name: "Triarii",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -488,7 +488,7 @@ export const RomulusCards = [
         class: "Status_Effect",
         display_class: "Status Effect",
         name: "Fog_of_War",
-        disPlay_name: "Fog of War",
+        display_name: "Fog of War",
         ability: "Fog_of_War",
         ability_desc: "Fog of War - Halve the strength of all Ranged Troops on the field.",
         lock: false
@@ -500,7 +500,7 @@ export const RomulusCards = [
         class: "Status_Effect",
         display_class: "Status Effect",
         name: "Fog_of_War",
-        disPlay_name: "Fog of War",
+        display_name: "Fog of War",
         ability: "Fog_of_War",
         ability_desc: "Fog of War - Halve the strength of all Ranged Troops on the field.",
         lock: false
@@ -512,7 +512,7 @@ export const RomulusCards = [
         class: "Utility",
         display_class: "Utility",
         name: "Reinforcements",
-        disPlay_name: "Reinforcements",
+        display_name: "Reinforcements",
         ability: "Reinforcements",
         ability_desc: "Reinforcements - Pick a card from your Legion and put it in your hand.",
         lock: false
@@ -524,7 +524,7 @@ export const RomulusCards = [
         class: "Utility",
         display_class: "Utility",
         name: "Reinforcements",
-        disPlay_name: "Reinforcements",
+        display_name: "Reinforcements",
         ability: "Reinforcements",
         ability_desc: "Reinforcements - Pick a card from your Legion and put it in your hand.",
         lock: false
@@ -536,7 +536,7 @@ export const RomulusCards = [
         class: "Utility",
         display_class: "Utility",
         name: "Sudis",
-        disPlay_name: "Sudis",
+        display_name: "Sudis",
         ability: "Sudis",
         ability_desc: "Sudis - When you play this card, the first troop played in the next round is discarded.",
         lock: false
@@ -548,7 +548,7 @@ export const RomulusCards = [
         class: "Utility",
         display_class: "Utility",
         name: "Sudis",
-        disPlay_name: "Sudis",
+        display_name: "Sudis",
         ability: "Sudis",
         ability_desc: "Sudis - When you play this card, the first troop played in the next round is discarded.",
         lock: false
@@ -560,7 +560,7 @@ export const RomulusCards = [
         class: "Utility",
         display_class: "Utility",
         name: "Laconian_Shib",
-        disPlay_name: "Laconian Shib",
+        display_name: "Laconian Shib",
         ability: "Laconian_Shib",
         ability_desc: "Laconian Shib- Reduce the Strength of all soldiers on foot by 1.",
         lock: false
@@ -572,7 +572,7 @@ export const RomulusCards = [
         class: "Utility",
         display_class: "Utility",
         name: "Laconian_Shib",
-        disPlay_name: "Laconian Shib",
+        display_name: "Laconian Shib",
         ability: "Laconian_Shib",
         ability_desc: "Laconian Shib- Reduce the Strength of all soldiers on foot by 1.",
         lock: false
@@ -584,7 +584,7 @@ export const RomulusCards = [
         class:"Utility",
         display_class:"Utility",
         name:"Praetorian_Guard",
-        disPlay_name:"Praetorian Guard",
+        display_name:"Praetorian Guard",
         ability: "Praetorian_Guard",
         ability_desc: "Praetorian Guard - Attach this card to any other troop to protect them from one negative effect from a enemy card. Discard after that attack.",
         lock:false
@@ -596,7 +596,7 @@ export const RomulusCards = [
         class:"Utility",
         display_class:"Utility",
         name:"Praetorian_Guard",
-        disPlay_name:"Praetorian Guard",
+        display_name:"Praetorian Guard",
         ability: "Praetorian_Guard",
         ability_desc: "Praetorian Guard - Attach this card to any other troop to protect them from one negative effect from a enemy card. Discard after that attack.",
         lock:false
@@ -608,7 +608,7 @@ export const RomulusCards = [
         class: "Status_Effect",
         display_class: "Status_Effect",
         name: "Filibuster",
-        disPlay_name: "Filibuster",
+        display_name: "Filibuster",
         ability: "Filibuster",
         ability_desc: "Filibuster - Negate the effect of any active politician card."
     },
@@ -619,7 +619,7 @@ export const RomulusCards = [
         class: "Status_Effect",
         display_class: "Status_Effect",
         name: "Filibuster",
-        disPlay_name: "Filibuster",
+        display_name: "Filibuster",
         ability: "Filibuster",
         ability_desc: "Filibuster - Negate the effect of any active politician card."
     },
@@ -633,7 +633,7 @@ export const RemusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Auxiliary",
-        disPlay_name: "Auxiliary",
+        display_name: "Auxiliary",
         ability: "Expendable",
         ability_desc: "Expendable - When an Auxiliary card is discarded, you can replace it with a previously discarded Auxiliary once per round.",
         lock: false
@@ -645,7 +645,7 @@ export const RemusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Auxiliary",
-        disPlay_name: "Auxiliary",
+        display_name: "Auxiliary",
         ability: "Expendable",
         ability_desc: "Expendable - When an Auxiliary card is discarded, you can replace it with a previously discarded Auxiliary once per round.",
         lock: false
@@ -657,7 +657,7 @@ export const RemusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Auxiliary",
-        disPlay_name: "Auxiliary",
+        display_name: "Auxiliary",
         ability: "Expendable",
         ability_desc: "Expendable - When an Auxiliary card is discarded, you can replace it with a previously discarded Auxiliary once per round.",
         lock: false
@@ -669,7 +669,7 @@ export const RemusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Auxiliary",
-        disPlay_name: "Auxiliary",
+        display_name: "Auxiliary",
         ability: "Expendable",
         ability_desc: "Expendable - When an Auxiliary card is discarded, you can replace it with a previously discarded Auxiliary once per round.",
         lock: false
@@ -681,7 +681,7 @@ export const RemusCards = [
         class: "Mounted_Troops",
         display_class: "Mounted Troops",
         name: "Cataphract",
-        disPlay_name: "Cataphract",
+        display_name: "Cataphract",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -693,7 +693,7 @@ export const RemusCards = [
         class: "Mounted_Troops",
         display_class: "Mounted Troops",
         name: "Cataphract",
-        disPlay_name: "Cataphract",
+        display_name: "Cataphract",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -705,7 +705,7 @@ export const RemusCards = [
         class: "Mounted_Troops",
         display_class: "Mounted Troops",
         name: "Cataphract",
-        disPlay_name: "Cataphract",
+        display_name: "Cataphract",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -717,7 +717,7 @@ export const RemusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Challus",
-        disPlay_name: "Challus",
+        display_name: "Challus",
         ability: "Rally",
         ability_desc: "Rally - Increase all other Light Soldier troops strength by 1.",
         lock: false
@@ -729,7 +729,7 @@ export const RemusCards = [
         class: "Ranged",
         display_class: "Ranged",
         name: "Crossbowman",
-        disPlay_name: "Crossbowman",
+        display_name: "Crossbowman",
         ability: "Efficiency",
         ability_desc: " Efficiency - add 1 to your overall strength for each enemy Light Soldier card on the battlefield.",
         lock: false
@@ -741,7 +741,7 @@ export const RemusCards = [
         class: "Ranged",
         display_class: "Ranged",
         name: "Crossbowman",
-        disPlay_name: "Crossbowman",
+        display_name: "Crossbowman",
         ability: "Efficiency",
         ability_desc: " Efficiency - add 1 to your overall strength for each enemy Light Soldier card on the battlefield.",
         lock: false
@@ -753,7 +753,7 @@ export const RemusCards = [
         class: "Ranged",
         display_class: "Ranged",
         name: "Crossbowman",
-        disPlay_name: "Crossbowman",
+        display_name: "Crossbowman",
         ability: "Efficiency",
         ability_desc: " Efficiency - add 1 to your overall strength for each enemy Light Soldier card on the battlefield.",
         lock: false
@@ -765,7 +765,7 @@ export const RemusCards = [
         class: "Mounted_Troops",
         display_class: "Mounted Troops",
         name: "Equites",
-        disPlay_name: "Equites",
+        display_name: "Equites",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -777,7 +777,7 @@ export const RemusCards = [
         class: "Mounted_Troops",
         display_class: "Mounted Troops",
         name: "Equites",
-        disPlay_name: "Equites",
+        display_name: "Equites",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -789,7 +789,7 @@ export const RemusCards = [
         class: "Mounted_Troops",
         display_class: "Mounted Troops",
         name: "Equites",
-        disPlay_name: "Equites",
+        display_name: "Equites",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -801,7 +801,7 @@ export const RemusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Hastati",
-        disPlay_name: "Hastati",
+        display_name: "Hastati",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -813,7 +813,7 @@ export const RemusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Hastati",
-        disPlay_name: "Hastati",
+        display_name: "Hastati",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -825,7 +825,7 @@ export const RemusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Hastati",
-        disPlay_name: "Hastati",
+        display_name: "Hastati",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -837,7 +837,7 @@ export const RemusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Hastati",
-        disPlay_name: "Hastati",
+        display_name: "Hastati",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -849,7 +849,7 @@ export const RemusCards = [
         class: "Politician",
         display_class: "Politician",
         name: "Imperator",
-        disPlay_name: "Imperator",
+        display_name: "Imperator",
         ability: "Ruthless_Tactics",
         ability_desc: " Ruthless Tactics - Choose a class, and halve the overall strength of that class for your opponent.",
         lock: false
@@ -861,7 +861,7 @@ export const RemusCards = [
         class: "Heavy_Soldier",
         display_class: "Heavy Soldier",
         name: "Legionnaire",
-        disPlay_name: "Legionnaire",
+        display_name: "Legionnaire",
         ability: "The_Machine",
         ability_desc: "The Machine - Double unit strength for each other legionnaire card in play.",
         lock: false
@@ -873,7 +873,7 @@ export const RemusCards = [
         class: "Heavy_Soldier",
         display_class: "Heavy Soldier",
         name: "Legionnaire",
-        disPlay_name: "Legionnaire",
+        display_name: "Legionnaire",
         ability: "The_Machine",
         ability_desc: "The Machine - Double unit strength for each other legionnaire card in play.",
         lock: false
@@ -885,7 +885,7 @@ export const RemusCards = [
         class: "Heavy_Soldier",
         display_class: "Heavy Soldier",
         name: "Legionnaire",
-        disPlay_name: "Legionnaire",
+        display_name: "Legionnaire",
         ability: "The_Machine",
         ability_desc: "The Machine - Double unit strength for each other legionnaire card in play.",
         lock: false
@@ -897,7 +897,7 @@ export const RemusCards = [
         class: "Politician",
         display_class: "Politician",
         name: "Magistrate",
-        disPlay_name: "Magistrate",
+        display_name: "Magistrate",
         ability: "Persuasive_Speech",
         ability_desc: "Persuasive Speech - Pick the enemy troop with the lowest strength on the field and move them to your side.",
         lock: false
@@ -909,19 +909,19 @@ export const RemusCards = [
         class: "Heavy_Soldier",
         display_class: "Heavy Soldier",
         name: "Magnus",
-        disPlay_name: "Magnus",
+        display_name: "Magnus",
         ability: "Master_Spy",
         ability_desc: "Master Spy - Pick a card from your Legion, and a card from your discard pile, and put them in your hand.",
         lock: false
     },
     {
         id: 22,
-        battleCard: 'https://playassets.s3.eu-west-1.amazonaws.com/remus-cards/vEmpire-card-Marus.jpg',
-        strength: 8,
+        battleCard: '/battle-cards/remus-cards/vEmpire-card-Marus.jpg',
+        strength: 7,
         class: "Heavy_Soldier",
         display_class: "Heavy Soldier",
         name: "Marus",
-        disPlay_name: "Marus",
+        display_name: "Marus",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -933,7 +933,7 @@ export const RemusCards = [
         class: "Heavy_Soldier",
         display_class: "Heavy Soldier",
         name: "Mercenary",
-        disPlay_name: "Mercenary",
+        display_name: "Mercenary",
         ability: "Bought_and_Paid_For",
         ability_desc: "Bought and Paid For - If still active after winning a round, the card remains on the playing Field during the following round",
         lock: false
@@ -945,7 +945,7 @@ export const RemusCards = [
         class: "Heavy_Soldier",
         display_class: "Heavy Soldier",
         name: "Mercenary",
-        disPlay_name: "Mercenary",
+        display_name: "Mercenary",
         ability: "Bought_and_Paid_For",
         ability_desc: "Bought and Paid For - If still active after winning a round, the card remains on the playing Field during the following round.",
         lock: false
@@ -957,7 +957,7 @@ export const RemusCards = [
         class: "Heavy_Soldier",
         display_class: "Heavy Soldier",
         name: "Mercenary",
-        disPlay_name: "Mercenary",
+        display_name: "Mercenary",
         ability: "Bought_and_Paid_For",
         ability_desc: "Bought and Paid For - If still active after winning a round, the card remains on the playing Field during the following round.",
         lock: false
@@ -969,7 +969,7 @@ export const RemusCards = [
         class: "Heavy_Soldier",
         display_class: "Heavy Soldier",
         name: "Remus",
-        disPlay_name: "Remus",
+        display_name: "Remus",
         ability: "Son_of_the_Wolf",
         ability_desc: "Son of the Wolf - Choose any enemy card on the battlefield and discard it.",
         lock: false
@@ -981,7 +981,7 @@ export const RemusCards = [
         class: "Ranged",
         display_class: "Ranged",
         name: "Slinger",
-        disPlay_name: "Slinger",
+        display_name: "Slinger",
         ability: "A_Stones_Throw",
         ability_desc: "A Stone’s Throw - Halve the strength of the weakest enemy card(s).",
         lock: false
@@ -993,7 +993,7 @@ export const RemusCards = [
         class: "Ranged",
         display_class: "Ranged",
         name: "Slinger",
-        disPlay_name: "Slinger",
+        display_name: "Slinger",
         ability: "A_Stones_Throw",
         ability_desc: "A Stone’s Throw - Halve the strength of the weakest enemy card(s).",
         lock: false
@@ -1005,7 +1005,7 @@ export const RemusCards = [
         class: "Ranged",
         display_class: "Ranged",
         name: "Slinger",
-        disPlay_name: "Slinger",
+        display_name: "Slinger",
         ability: "A_Stones_Throw",
         ability_desc: "A Stone’s Throw - Halve the strength of the weakest enemy card(s).",
         lock: false
@@ -1017,7 +1017,7 @@ export const RemusCards = [
         class: "Light_Soldier",
         display_class: "Light_Soldier",
         name: "Speculatores",
-        disPlay_name: "Speculatores",
+        display_name: "Speculatores",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -1029,19 +1029,19 @@ export const RemusCards = [
         class: "Light_Soldier",
         display_class: "Light_Soldier",
         name: "Speculatores",
-        disPlay_name: "Speculatores",
+        display_name: "Speculatores",
         ability: "None",
         ability_desc: "None",
         lock: false
     },
     {
         id: 32,
-        battleCard: 'https://playassets.s3.eu-west-1.amazonaws.com/remus-cards/vEmpire-card-Vettius.jpg',
-        strength: 8,
+        battleCard: '/battle-cards/remus-cards/vEmpire-card-Vettius.jpg',
+        strength: 7,
         class: "Heavy_Soldier",
         display_class: "Heavy Soldier",
         name: "Vettius",
-        disPlay_name: "Vettius",
+        display_name: "Vettius",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -1053,7 +1053,7 @@ export const RemusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Villagers",
-        disPlay_name: "Villagers",
+        display_name: "Villagers",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -1065,7 +1065,7 @@ export const RemusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Villagers",
-        disPlay_name: "Villagers",
+        display_name: "Villagers",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -1077,7 +1077,7 @@ export const RemusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Villagers",
-        disPlay_name: "Villagers",
+        display_name: "Villagers",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -1089,7 +1089,7 @@ export const RemusCards = [
         class: "Light_Soldier",
         display_class: "Light Soldier",
         name: "Villagers",
-        disPlay_name: "Villagers",
+        display_name: "Villagers",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -1101,7 +1101,7 @@ export const RemusCards = [
         class: "Ranged",
         display_class: "Ranged",
         name: "Xena",
-        disPlay_name: "Xena",
+        display_name: "Xena",
         ability: "None",
         ability_desc: "None",
         lock: false
@@ -1113,7 +1113,7 @@ export const RemusCards = [
         class: "Status_Effect",
         display_class: "Status Effect",
         name: "Fog_of_War",
-        disPlay_name: "Fog of War",
+        display_name: "Fog of War",
         ability: "Fog_of_War",
         ability_desc: "Fog of War - Halve the strength of all Ranged Troops on the field.",
         lock: false
@@ -1125,7 +1125,7 @@ export const RemusCards = [
         class: "Status_Effect",
         display_class: "Status Effect",
         name: "Fog_of_War",
-        disPlay_name: "Fog of War",
+        display_name: "Fog of War",
         ability: "Fog_of_War",
         ability_desc: "Fog of War - Halve the strength of all Ranged Troops on the field.",
         lock: false
@@ -1137,7 +1137,7 @@ export const RemusCards = [
         class: "Utility",
         display_class: "Utility",
         name: "Reinforcements",
-        disPlay_name: "Reinforcements",
+        display_name: "Reinforcements",
         ability: "Reinforcements",
         ability_desc: "Reinforcements - Pick a card from your Legion and put it in your hand.",
         lock: false
@@ -1148,7 +1148,7 @@ export const RemusCards = [
         class: "Utility",
         display_class: "Utility",
         name: "Reinforcements",
-        disPlay_name: "Reinforcements",
+        display_name: "Reinforcements",
         ability: "Reinforcements",
         ability_desc: "Reinforcements - Pick a card from your Legion and put it in your hand.",
         lock: false
@@ -1160,7 +1160,7 @@ export const RemusCards = [
         class: "Utility",
         display_class: "Utility",
         name: "Sudis",
-        disPlay_name: "Sudis",
+        display_name: "Sudis",
         ability: "Sudis",
         ability_desc: "Sudis - When you play this card, the first troop played in the next round is discarded.",
         lock: false
@@ -1172,7 +1172,7 @@ export const RemusCards = [
         class: "Utility",
         display_class: "Utility",
         name: "Sudis",
-        disPlay_name: "Sudis",
+        display_name: "Sudis",
         ability: "Sudis",
         ability_desc: "Sudis - When you play this card, the first troop played in the next round is discarded.",
         lock: false
@@ -1184,7 +1184,7 @@ export const RemusCards = [
         class: "Utility",
         display_class: "Utility",
         name: "Laconian_Shib",
-        disPlay_name: "Laconian Shib",
+        display_name: "Laconian Shib",
         ability: "Laconian_Shib",
         ability_desc: "Laconian Shib- Reduce the Strength of all soldiers on foot by 1.",
         lock: false
@@ -1196,7 +1196,7 @@ export const RemusCards = [
         class: "Utility",
         display_class: "Utility",
         name: "Laconian_Shib",
-        disPlay_name: "Laconian Shib",
+        display_name: "Laconian Shib",
         ability: "Laconian_Shib",
         ability_desc: "Laconian Shib- Reduce the Strength of all soldiers on foot by 1.",
         lock: false
@@ -1208,7 +1208,7 @@ export const RemusCards = [
         class:"Utility",
         display_class:"Utility",
         name:"Praetorian_Guard",
-        disPlay_name:"Praetorian Guard",
+        display_name:"Praetorian Guard",
         ability: "Praetorian_Guard",
         ability_desc: "Praetorian Guard - Attach this card to any other troop to protect them from one negative effect from a enemy card. Discard after that attack.",
         lock:false
@@ -1220,7 +1220,7 @@ export const RemusCards = [
         class:"Utility",
         display_class:"Utility",
         name:"Praetorian_Guard",
-        disPlay_name:"Praetorian Guard",
+        display_name:"Praetorian Guard",
         ability: "Praetorian_Guard",
         ability_desc: "Praetorian Guard - Attach this card to any other troop to protect them from one negative effect from a enemy card. Discard after that attack.",
         lock:false
@@ -1232,7 +1232,7 @@ export const RemusCards = [
         class: "Status_Effect",
         display_class: "Status Effect",
         name: "Filibuster",
-        disPlay_name: "Filibuster",
+        display_name: "Filibuster",
         ability: "Filibuster",
         ability_desc: "Filibuster - Negate the effect of any active politician card.",
         lock: false
@@ -1244,7 +1244,7 @@ export const RemusCards = [
         class: "Status_Effect",
         display_class: "Status Effect",
         name: "Filibuster",
-        disPlay_name: "Filibuster",
+        display_name: "Filibuster",
         ability: "Filibuster",
         ability_desc: "Filibuster - Negate the effect of any active politician card.",
         lock: false

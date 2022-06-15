@@ -1,15 +1,17 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { getLocalStore } from "../../common/localStorage";
 
 const initialState = {
   riskFactor: "10",
   amountLocked:"",
   socket: "",
-  battleArray: [],
+  battleArray: getLocalStore('battleArray'),
   scoreRound1: {},
   scoreRound2: {},
   scoreRound3: {},
   endClick: false,
-  eventClickable:true
+  eventClickable:true,
+  nftCards:[]
 };
 
 export const commonSlice = createSlice({
@@ -43,6 +45,9 @@ export const commonSlice = createSlice({
     setEventClickable: (state, action: PayloadAction<any>) => {
       state.eventClickable = action.payload;
     },
+    setNftCards: (state, action: PayloadAction<any>) => {
+      state.nftCards = action.payload;
+    },
   },
 });
 
@@ -55,6 +60,7 @@ export const {
   setScoreRound2,
   setScoreRound3,
   setAmountLocked,
+  setNftCards,
   setEndClick,
 } = commonSlice.actions;
 export default commonSlice.reducer;

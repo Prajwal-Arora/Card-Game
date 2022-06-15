@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-const RouteGuard=(message:string)=>{
+const RouteGuard=()=>{
   
           window.history.pushState(
             { name: "browserBack" },
@@ -16,7 +16,7 @@ const RouteGuard=(message:string)=>{
             "popstate",
             (event) => {
               if (event.state) {
-                alert(message);
+                alert('Your information may lost');
                 return true;
               }
             },

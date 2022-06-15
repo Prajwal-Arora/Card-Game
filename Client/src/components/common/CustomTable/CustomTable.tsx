@@ -51,13 +51,14 @@ const CustomTable = ({
         </thead> */}
 
         <tbody>
-          {rows.slice(0, limit).map((row: any) => {
+          {rows?.slice(0, limit).map((row: any) => {
             return (
               <tr key={row?.id}>
                 {columns.map(({ key, render }) => {
                   if (render) {
                     return (
-                      <td key={key}>
+                      <td className={key==='user'?'username-width':''} key={key}>
+
                         <span className={"td-item  gradient-text "}>
                           {render(row)}
                         </span>
@@ -95,4 +96,4 @@ const CustomTable = ({
   );
 };
 
-export default CustomTable;
+export default React.memo(CustomTable);

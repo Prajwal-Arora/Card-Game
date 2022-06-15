@@ -1,7 +1,4 @@
-import BigNumber from "bignumber.js";
-import { useEffect, useMemo } from "react";
 import { useAppSelector } from "./store";
-import { State, walletDetail } from "./types";
 
 export const useWalletDetail = () => {
   const wallet = useAppSelector((state) => state?.walletConnect);
@@ -26,8 +23,8 @@ export const useBattleDetail = () => {
   return detail;
 };
 
-export const useTokenBalance=()=>{
-  const amount: any = useAppSelector((state) => state?.walletConnect.tokenBalance);
-
-  return amount;
+export const useNftCards=()=>{
+  const nftCards: any = useAppSelector((state) => state?.userDetail.nftCards);
+  return nftCards;
 }
+

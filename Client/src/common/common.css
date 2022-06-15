@@ -1,0 +1,226 @@
+.sounds-container {
+    margin-right: 1.5rem;
+    margin-top: 0.5rem;
+    z-index: 1;
+  }
+  
+  .music-btn {
+    background: transparent;
+    order: 2;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    border-radius: 5px;
+    margin-left: 10px;
+    position: relative;
+    margin-left: auto;
+    color: #fad02a !important;
+    font-size: 2rem;
+    padding: 0;
+  }
+  
+  .music-btn img {
+    width: 20px;
+    object-fit: contain;
+  }
+  
+  .sounds-container .close {
+    position: absolute;
+    width: 40px;
+    height: 3px;
+    top: 78%;
+    border-radius: 5px;
+    background: #fad02a;
+    left: 40%;
+    transform: rotate(45deg) translateX(-50%);
+  }
+  
+  .sounds-container .form-range {
+    margin-right: 10px;
+    margin-left: auto;
+  }
+  
+  .range-container {
+    margin-right: 10px;
+  }
+  
+  .range-container .slider {
+    -webkit-appearance: none;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 1;
+    border-radius: 10px;
+    height: 10px;
+  }
+  
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 17px;
+    height: 17px;
+    background: #fad02a;
+    cursor: pointer;
+    border-radius: 50%;
+  }
+  
+  .volume-range {
+    width: 11%;
+    transition: all 0.3s linear;
+  }
+  
+  .range-container:hover .volume-range:hover {
+    width: 100%;
+  }
+  
+  /** FF*/
+  
+  input[type="range"]::-moz-range-progress {
+    background: #fad02a;
+  }
+  
+  /* Chat Box */
+  .chat-box {
+    position: fixed;
+  
+    bottom: 0px;
+    width: 100px;
+    border-radius: 5px 5px 0px 0px;
+    z-index: 100;
+  }
+  
+  .blinking {
+    background: #2c3e50!important;
+    border-radius: 5px 5px 0px 0px!important;
+    height: 30px !important;
+    border: 3px solid red;
+    animation-name: blinking;
+    animation-duration: 1s;
+    animation-iteration-count: 100;
+  }
+  @keyframes blinking {
+    50% {
+      border-color: #ffcd5f;
+    }
+  }
+  
+  .chat-white {
+    border-radius: 24px 24px 0px 0px;
+    box-shadow: 0px 0px 20px rgb(255 122 0 / 50%);
+    /* border-radius: 15px; */
+    border: 4px solid yellow !important;
+    background: #0c0c0c;
+    width: 355px;
+  }
+  
+  .chat-box-player1 {
+    right: 20px;
+  }
+  .chat-box-player2 {
+    left: 20px;
+  }
+  .chat-head {
+    cursor: pointer;
+    height: 40px;
+    background: #f9d42f;
+    border-radius: 20px 20px 0px 0px;
+  }
+  .chat-head span svg {
+    fill: black!important;
+  }
+  .chat-head-bar {
+    background: #2c3e50;
+    border-radius: 5px 5px 0px 0px;
+    height: 30px !important;
+    border: 1px solid yellow;
+  }
+  .chat-head h2 {
+    color: white;
+    display: inline-block;
+  }
+  .chat-head span {
+    cursor: pointer;
+    float: right;
+    width: 15px;
+    margin: 2px 10px;
+  }
+  
+  .chat-body {
+    display: none;
+    height: 270px;
+    overflow: hidden auto;
+    margin-bottom: 60px;
+  }
+  
+  .chat-text {
+    position: fixed;
+    bottom: 10px;
+    margin-left: 14px;
+    height: 40px;
+    width: 75%;
+  }
+  
+  .chat-text input {
+    background: rgba(12, 12, 12, 0.25);
+    width: 320px;
+    color: white;
+    height: 95%;
+    border: 1px solid #fff469;
+    padding: 10px;
+    box-shadow: inset 0px 0px 15px #000000;
+    border-radius: 8px;
+  }
+  .chat-text input:active,
+  .chat-text input:focus,
+  .chat-text input:hover {
+    border-color: #fff469;
+  }
+  .msg-send {
+    background: #f9d42f;
+    box-shadow: 0px 2.9543px 2.9543px rgba(0, 0, 0, 0.25);
+  }
+  .msg-receive {
+    background: linear-gradient(
+      224.89deg,
+      #ffd12b 36.94%,
+      #ffff7b 49.9%,
+      #fff469 62.87%
+    );
+    box-shadow: 0px 2.9543px 2.9543px rgb(0 0 0 / 25%);
+  }
+  .msg-send,
+  .msg-receive {
+    word-break: break-word;
+    width: 285px;
+    height: 100%;
+    padding: 5px 5px 5px 10px;
+    margin: 5px auto;
+    border-radius: 3px;
+    line-height: 30px;
+    position: relative;
+    color: black;
+  }
+  .msg-receive:before {
+    content: "";
+    width: 0px;
+    height: 0px;
+    position: absolute;
+    border: 15px solid;
+    border-color: transparent #ffff7b transparent transparent;
+    left: -29px;
+    top: 7px;
+  }
+  .msg-send:after {
+    content: "";
+    width: 0px;
+    height: 0px;
+    position: absolute;
+    border: 15px solid;
+    border-color: transparent transparent transparent #f9d42f;
+    right: -29px;
+    top: 7px;
+  }
+  .msg-receive:hover,
+  .msg-send:hover {
+    opacity: 0.9;
+  }
+  

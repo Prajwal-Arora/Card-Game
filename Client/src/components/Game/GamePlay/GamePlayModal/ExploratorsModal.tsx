@@ -2,12 +2,10 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { Modal } from 'react-bootstrap'
 import './index.css'
 
-const EmploratorsModal = ({ handleChangeTurnCardEmit, ownerAccount, currentSelectedCard, account, openExploratoryModal, setOpenExploratoryModal, battleListOpponent }: any) => {
+const EmploratorsModal = ({ handleChangeTurnCardEmit, ownerAccount, currentSelectedCard, account, openExploratoryModal, setOpenExploratoryModal, battleListOpponent,socket }: any) => {
 
     const [selectedCardVisibility, setSelectedCardVisibility] = useState<boolean>(false)
     const [selectedCards, setSelectedCards] = useState<number[]>([])
-
-    // const selectedCards= new Set();
 
     const cardSelect = (id: number) => {
         if (id !== undefined) {
@@ -26,22 +24,6 @@ const EmploratorsModal = ({ handleChangeTurnCardEmit, ownerAccount, currentSelec
             })
         }
     }
-
-    // const cardDeselect=(id:number)=>{
-    //     if(id!==undefined){
-    //         setSelectedCards((prev:number[])=>{
-    //             let newList= new Set(prev)
-    //             if(newList.has(id)){
-    //                 newList.delete(id)
-    //             }
-    //             else{
-    //                 console.log("id not present")
-    //             }
-    //             return Array.from(newList)
-    //         })
-    //     }
-    // } 
-
 
     const toggleSelection = (id: number, items: any) => {
         setSelectedCardVisibility(true)
@@ -102,19 +84,6 @@ const EmploratorsModal = ({ handleChangeTurnCardEmit, ownerAccount, currentSelec
                             );
                         })}
                     </div>
-                    {/* `<div className="d-flex justify-content-center">
-                    <div >
-                        <button
-                            onClick={handleCancel}
-                            className="mx-3 mt-4 cancel-btn  d-flex align-items-center"
-                        >
-                            <div className=" d-flex align-items-center position-relative">
-                                <div >Cancel</div>
-                            </div>
-                        </button>
-
-                    </div>
-                    </div>` */}
                 </Modal.Body>
 
             </Modal>

@@ -1,11 +1,10 @@
+const mongoose = require('./database');
 const express = require('express');
 const app = express();
 const port = 3003;
 const cors = require('cors');
-const { instrument } = require('@socket.io/admin-ui');
-const { randomUUID } = require('crypto');
-const bodyParser = require("body-parser");
-const mongoose = require('./database');
+const { Telegraf } = require('telegraf');
+const bot = new Telegraf('<BOT-TOKEN>');
 const server = app.listen(port, () => console.log("Server listening on port " + port));
 const io = require("socket.io")(server, {
     cors: {
@@ -15,14 +14,14 @@ const io = require("socket.io")(server, {
 });
 
 app.use(cors());
-app.use(bodyParser.urlencoded({extended : false}));
+app.use(express.json());
 
 // Api routes
-const userApiRoute = require('./api/user');
-const battleApiRoute = require('./api/battle');
-
-app.use("/api/user", userApiRoute);
-app.use("/api/battle", battleApiRoute);
+app.use("/api/user", require('./api/user'));
+app.use("/api/login", require('./api/login'));
+app.use("/api/signup", require('./api/signup'));
+app.use("/api/forgetPass", require('./api/forgetPass'));
+app.use("/api/resetPass", require('./api/resetPass'));
 
 app.get("/", (req, res, next) => {
     res.status(200);
@@ -30,15 +29,27 @@ app.get("/", (req, res, next) => {
 
 const battleArray = [];
 
+bot.command('start', ctx => {
+    console.log(ctx.from)
+    bot.telegram.sendMessage(ctx.chat.id, 'Started listening!', {
+    })
+})
+
+bot.launch();
+
 io.on("connection", socket => {
+
+    socket.on("telegram", data => {
+        bot.telegram.sendMessage("<enter-chat-id>", `${data} has created a room. \n \nGot what it takes to defeat them? 👀 \n \nBattle it out here ⚔️: \n \n🔗 https://freeplay.v-empire.io/`, {})
+    }) 
 
     // 1st on
     socket.on("createBattleRoom", (data, callback) => {
         try {
             const payload = JSON.parse(data);
-            if (payload.p1 === '' || payload.xVemp === '') {
+            if (payload.p1 === '') {
                 callback()
-                console.log('EMPTY ADDRESS OR XVEMP')
+                console.log('EMPTY ADDRESS')
             } else {
                 const index = battleArray.findIndex(obj => obj.player1 === payload.p1);
                 if (index !== -1) {
@@ -48,9 +59,6 @@ io.on("connection", socket => {
                     player1: payload.p1,
                     team1: payload.team,
                     player2: '',
-                    xVempLocked: payload.xVemp,
-                    risk1: '',
-                    risk2: '',
                     legion1: [],
                     legion2: [],
                     cardsP1: [],
@@ -71,7 +79,8 @@ io.on("connection", socket => {
                     sudisFlag1: 0,
                     sudisFlag2: 0,
                     auxFlag: 0,
-                    uid: randomUUID().split('-').join('')
+                    spectators: [],
+                    url: ''
                 })
                 socket.join(payload.p1);
                 socket.emit("p1xObj", JSON.stringify(newBattle))
@@ -98,6 +107,17 @@ io.on("connection", socket => {
         }
     })
 
+    socket.on("joinAsSpectator", data => {
+        try {
+            const array = JSON.parse(data);
+            const index = battleArray.findIndex(obj => obj.player1 === array[0]);
+            battleArray[index].spectators.push(array[1]);
+            socket.join(array[0]);
+        } catch (e) {
+            console.log(e);
+        }
+    })
+
     //3rd on
     socket.on("clean", (data) => {
         try {
@@ -116,7 +136,6 @@ io.on("connection", socket => {
 
             if (battleArray[index].player2 === array[1]) {
                 battleArray[index].player2 = '';
-                battleArray[index].risk2 = '';
                 io.in(array[0]).emit("cleanedArray", JSON.stringify(battleArray[index]));
                 return;
             }
@@ -129,6 +148,7 @@ io.on("connection", socket => {
     socket.on("getArray", () => {
         socket.emit("arrayOnJoin", JSON.stringify(battleArray));
     })
+
 
     //5th on
     socket.on("riskButtonClick", data => {
@@ -151,28 +171,25 @@ io.on("connection", socket => {
         try {
             const array = JSON.parse(data);
             const index = battleArray.findIndex(obj => obj.player1 === array[0]);
+            battleArray[index].url = array[3];
 
             if (battleArray[index].player1 === array[1]) {
-                console.log("p1 legion" + battleArray[index].legion1.length);
                 battleArray[index].legion1 = array[2];
-                for (let i = 0; i < 10; i++) {
+                for (let i = 0; i < 15; i++) {
                     let randomIndex = Math.floor(Math.random() * battleArray[index].legion1.length);
                     battleArray[index].cardsP1.push(battleArray[index].legion1[randomIndex]);
                     battleArray[index].legion1.splice(randomIndex, 1);
                 }
-                console.log("p1 cards" + battleArray[index].cardsP1.length);
                 io.in(array[0]).emit("arrayWithCards", JSON.stringify(battleArray[index]));
                 return;
             }
             if (battleArray[index].player2 === array[1]) {
-                console.log("p2 legion" + battleArray[index].legion2.length);
                 battleArray[index].legion2 = array[2];
-                for (let i = 0; i < 10; i++) {
+                for (let i = 0; i < 15; i++) {
                     let randomIndex = Math.floor(Math.random() * battleArray[index].legion2.length);
                     battleArray[index].cardsP2.push(battleArray[index].legion2[randomIndex]);
                     battleArray[index].legion2.splice(randomIndex, 1);
                 }
-                console.log("p2 cards" + battleArray[index].cardsP2.length);
                 io.in(array[0]).emit("arrayWithCards", JSON.stringify(battleArray[index]));
                 return;
             }
@@ -787,10 +804,49 @@ io.on("connection", socket => {
         }
     })
 
+    //18th on
+    socket.on("refresh", data => {
+        try {
+            const array = JSON.parse(data);
+            const index = battleArray.findIndex(obj => obj.player1 === array[0]);
+            if (battleArray[index].player1 === array[1]) {
+                battleArray[index].winner_g = battleArray[index].player2;
+                io.in(array[0]).emit("afterRefresh", JSON.stringify(battleArray[index]));
+                return;
+            }
+            if (battleArray[index].player2 === array[1]) {
+                battleArray[index].winner_g = battleArray[index].player1;
+                io.in(array[0]).emit("afterRefresh", JSON.stringify(battleArray[index]));
+                return;
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    })
+
+    socket.on("message", data => {
+        try {
+            io.in(data.owner).emit("newMessage", { text: data.chat, user: data.client });
+        } catch (e) {
+            console.log(e);
+        }
+    })
+
+    socket.on("exitSpectator", data => {
+        try {
+            const array = JSON.parse(data);
+            const index = battleArray.findIndex(obj => obj.player1 === array[0]);
+            const specToRemove = battleArray[index].spectators.findIndex(i => i === array[1]);
+            battleArray[index].spectators.splice(specToRemove, 1);
+            io.in(array[0]).emit("afterSpecRemove", JSON.stringify(battleArray[index]));
+        } catch (e) {
+            console.log(e);
+        }
+    })
 })
 
-const addBattle = ({ player1, team1, player2, xVempLocked, risk1, risk2, legion1, legion2, cardsP1, cardsP2, score1, score2, playedCardsP1, playedCardsP2, discardedCards1, discardedCards2, turn, winner_g, winner_r1, winner_r2, roundP1, roundP2, sudisRound, sudisFlag1, sudisFlag2, auxFlag, uid }) => {
-    const newBattle = { player1, team1, player2, xVempLocked, risk1, risk2, legion1, legion2, cardsP1, cardsP2, score1, score2, playedCardsP1, playedCardsP2, discardedCards1, discardedCards2, turn, winner_g, winner_r1, winner_r2, roundP1, roundP2, sudisRound, sudisFlag1, sudisFlag2, auxFlag, uid }
+const addBattle = ({ player1, team1, player2, legion1, legion2, cardsP1, cardsP2, score1, score2, playedCardsP1, playedCardsP2, discardedCards1, discardedCards2, turn, winner_g, winner_r1, winner_r2, roundP1, roundP2, sudisRound, sudisFlag1, sudisFlag2, auxFlag, spectators, url }) => {
+    const newBattle = { player1, team1, player2, legion1, legion2, cardsP1, cardsP2, score1, score2, playedCardsP1, playedCardsP2, discardedCards1, discardedCards2, turn, winner_g, winner_r1, winner_r2, roundP1, roundP2, sudisRound, sudisFlag1, sudisFlag2, auxFlag, spectators, url }
     battleArray.push(newBattle)
     return { newBattle }
 }
@@ -813,7 +869,7 @@ const Julius = (cardIndex, oppCardSelected, cardSelected, currentScore, oppScore
     currentScore = currentScore + cardSelected.strength;
     playedDeck.forEach((card) => {
         if (card.class === "Heavy_Soldier") {
-            currentScore = currentScore + Math.ceil((25 * card.strength) / 100);
+            currentScore = currentScore + Math.ceil((50 * card.strength) / 100);
         }
     })
     currentDeck.splice(cardIndex, 1);
@@ -972,7 +1028,7 @@ const Updater = (oppCardSelected, cardSelected, currentScore, oppScore, currentD
         }
         if (lowestStrength > 0) {
             oppPlayedDeck.forEach((card) => {
-                if (card.strength === lowestStrength) {
+                if (card.strength === lowestStrength && card.lock === false) {
                     oppScore = oppScore - Math.floor(card.strength / 2);
                 }
             })
@@ -1025,7 +1081,7 @@ const Updater = (oppCardSelected, cardSelected, currentScore, oppScore, currentD
     if (cardSelected.ability === "Laconian_Shib") {
         currentScore = currentScore + cardSelected.strength;
         oppPlayedDeck.forEach((card) => {
-            if (card.class !== "Mounted_Soldier" && card.class !== "Mounted_Troops" && card.class !== "Status_Effect" && card.class !== "Utility") {
+            if (card.class !== "Mounted_Soldier" && card.class !== "Mounted_Troops" && card.class !== "Status_Effect" && card.class !== "Utility" && card.lock === false) {
                 oppScore = oppScore - 1;
             }
         })
@@ -1039,7 +1095,7 @@ const Updater = (oppCardSelected, cardSelected, currentScore, oppScore, currentD
     if (cardSelected.ability === "Fog_of_War") {
         currentScore = currentScore + cardSelected.strength;
         oppPlayedDeck.forEach((card) => {
-            if (card.class === "Ranged") {
+            if (card.class === "Ranged" && card.lock === false) {
                 oppScore = oppScore - Math.floor(card.strength / 2);
             }
         })
@@ -1141,5 +1197,3 @@ const Updater = (oppCardSelected, cardSelected, currentScore, oppScore, currentD
     }
 
 }
-
-instrument(io, { auth: false });

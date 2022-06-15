@@ -9,7 +9,7 @@ class Database {
     }
 
     connect() {
-        mongoose.connect('mongodb+srv://praj:8jUGwGiwLby8VwmF@one.nuysn.mongodb.net/game?retryWrites=true&w=majority')
+        mongoose.connect('<ENTER-MONGO-CONNECTION-STRING>')
         .then(() => {
             console.log("database connection successful");
         })

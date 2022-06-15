@@ -1,67 +1,65 @@
-import React, { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Modal } from "react-bootstrap";
 import { useHistory } from "react-router-dom";
-import { toast } from "react-toastify";
-import { useTokenBalance } from "../../../store/hooks";
-import { useAppDispatch, useAppSelector } from "../../../store/store";
+import { useSocketDetail } from "../../../store/hooks";
+import { useAppDispatch } from "../../../store/store";
 import { socketCreateIntegration } from "../../../utils/contractIntegration/socketIntegration";
 
-const CreateRoomModal = ({ account, show, handleClose, elementRef }: any) => {
+const CreateRoomModal = ({  account, show, handleClose, elementRef }: any) => {
   const dispatch = useAppDispatch();
+  let socket: any = useSocketDetail();
   let history = useHistory();
-  const [amount, setAmount] = useState("");
   const [teamSelect, setTeamSelect] = useState("");
+
+  useEffect(() => {
+    setTeamSelect('')
+  }, [show])
+
 
   const handleRedirect = useCallback(() => {
     history.push({
-      pathname: "/risk-factor",
+      pathname: "/ready",
       search: account,
       state: account,
     });
   }, [history]);
 
   const handleCreateRoom = () => {
-    // if (balance >= amount) {
-      socketCreateIntegration(dispatch, {
-        account,
-        amount,
-        teamSelect,
-        onCreation: handleRedirect,
-      });
-    // }
-    // else {
-    //   toast("Dont have that much balance to create room")
-    // }
-
-  };
+    socketCreateIntegration(dispatch, {
+      account,
+      socket,
+      teamSelect,
+      onCreation: handleRedirect,
+    });
+  }
 
   return (
     <Modal show={show} onHide={handleClose}>
       <Modal.Body className="modal-bg ">
         <div>
-          <h3 className="text-lg text-white gradient-text">xVemp Amount</h3>
           <div className="relative  flex-auto">
-            <input
-              type="number"
-              placeholder="Enter amount"
-              className={`w-100 px-2 py-2 input-bg text-primary`}
-              id="input"
-              onChange={(e) => setAmount(e.currentTarget.value)}
-            />
+          <h3 className="text-lg text-white gradient-text">Select Team</h3>
             <div>
-              
               <select
-                onClick={(e) => setTeamSelect(e.currentTarget.value)}
-                className="form-select dropdown-btn mt-3 w-100 px-2 py-2"
+                onChange={(e) => setTeamSelect(e.currentTarget.value)}
+                className={`form-select ${teamSelect !== '' && 'create-modal-btn'} dropdown-btn mt-3 w-100 px-2 py-2`}
               >
-                <option value="" selected>Select Team</option>
-                <option value="Remus">Remus</option>
-                <option value="Romulus">Romulus</option>
+                <option className="bg-black text-white" value="">
+                  Select Team
+                </option>
+                <option className="bg-black text-white " value="Remus">
+                  Remus
+                </option>
+                <option className="bg-black text-white " value="Romulus">
+                  Romulus
+                </option>
               </select>
             </div>
             <button
               onClick={handleCreateRoom}
-              disabled={amount === "" || teamSelect === ""}
+              disabled={
+                teamSelect === ""
+              }
               className="mx-auto mt-4 custom-btn d-flex align-items-center"
             >
               <div className="d-flex align-items-center position-relative">

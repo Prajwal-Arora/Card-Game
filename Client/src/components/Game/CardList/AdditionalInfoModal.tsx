@@ -1,16 +1,22 @@
 import React, { useState } from 'react';
 import { Modal } from 'react-bootstrap';
+import PoolTimer from '../../common/PoolTimer';
 import './index.css'
 
 const AdditionalInfoModal = ({ setShowInfoModal, showInfoModal }: any) => {
 
-
     const handleContinue = () => {
         setShowInfoModal(false)
     }
+
+    const handleAdditionalInfoClose=()=>{
+        setShowInfoModal(false)
+    }
+
     return (
         <div className='additional-info'>
             <Modal
+                onHide={handleAdditionalInfoClose}
                 show={showInfoModal}
                 size="lg"
                 aria-labelledby="contained-modal-title-vcenter"
@@ -19,32 +25,27 @@ const AdditionalInfoModal = ({ setShowInfoModal, showInfoModal }: any) => {
                 <Modal.Body className="bg-image px-5">
                     <div
                         className=" position-relative d-flex z-0 text-center mx-auto mb-4 mt-3"
-                        style={{ width: "300px" }}
+                        style={{ width: "100%" }}
                     >
                         <img
-                            style={{ width: "100%" }}
+                            style={{ width: "50%" }}
                             className="m-auto "
                             src="/images/Rectangle 4.png"
                             alt=""
                         />
-                        <div
-                            style={{
-                                width: "100%",
-                                fontSize: "28px",
-                                position: "absolute",
-                                top: "46%",
-                                left: "50%",
-                                transform: " translate(-50%, -50%)",
-                                color: "yellow",
-                            }}
-                        >
-                           SELECT CARDS
+                        <div className='d-flex justify-between'>
+                            <div
+                                className='select-card'
+                            >
+                                SELECT CARDS
+                            </div>
+                            <PoolTimer time={60} response={() => handleAdditionalInfoClose()} />
                         </div>
                     </div>
                     <ol>
                         <li className='pb-4'>Select 25 cards to make up your legion</li>
                         <li className='pb-4'>You will then be randomly assigned 15 of these to make your hand</li>
-                        <li>The other 10 card will make up your battle deck.Some abilities allow you to access these during the game!</li>
+                        <li>The other 10 card will make up your battle deck. Some abilities allow you to access these during the game!</li>
                     </ol>
                     <button
                         className="mx-auto mt-4 mb-2 continue-info-modal d-flex align-items-center"

@@ -35,14 +35,20 @@
 .active {
     box-shadow: 0px 0px 20px rgb(255 122 0 / 100%);
     background: black;
-    border: 3px solid yellow !important;
+    border: 4px solid yellow !important;
+    border-radius: 30px;
+}
+
+.nft-active{
+    box-shadow: 0px 0px 20px rgb(255 122 0 / 100%);
+    background: black;
+    border: 4px solid orange !important;
     border-radius: 30px;
 }
 
 .modal-font-weight {
     font-weight: 200 !important;
 }
-
 
 
 .card {
@@ -76,6 +82,10 @@
     border-radius: 20px!important;
 }
 
+.nft-card{
+    border: 3px solid red !important;
+    border-radius: 20px!important;
+}
 .cardLoading{
     top: 40%!important;
     right: 40% !important;
@@ -104,4 +114,24 @@
 , #ffd12b 36.94%, #ffff7b 49.9%, #fff469 62.87%);
     border-radius: 11px;
     width: 35%;
+}
+
+.card-selection{
+    width: 60%;
+    font-size: 1.4vw;
+    position: absolute;
+    top: 46%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+}
+
+.select-card{
+    width: 100%;
+    font-size: 2vw;
+    position: absolute;
+    top: 46%;
+    left: 48%;
+    transform: translate(-50%, -50%);
+    color: yellow;
 }

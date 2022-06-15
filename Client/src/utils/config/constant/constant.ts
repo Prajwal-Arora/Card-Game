@@ -1,8 +1,8 @@
 export const connectionOptions =  {
-    "forceNew" : false,
+    "forceNew" : true,
     "reconnectionAttempts": Infinity,
-    "timeout" : 60000,
-    "autoConnect": false
+    "timeout" : 200000,
+    "autoConnect": true
 }
 
 export const settings = {

@@ -1,10 +1,18 @@
 import React from 'react'
 
-const WinnerByInactivity = ({playerName,Round1Score,Round2Score,Round3Score}:any) => {
+const WinnerByInactivity = ({ state, playerName }: any) => {
     return (
-        <div className="inactivity-player text-uppercase">{
-            playerName} WINS ,<br/>opponent is inactive
-        </div>
+        <>
+            {state === 'inactive' ?
+                (<div className="inactivity-player text-uppercase">
+                    {playerName} WINS ,<br />opponent is inactive
+                </div>):
+            (<div className="inactivity-player text-uppercase">
+                {playerName} WINS, <br/>Opponent has left the game
+            </div>)
+                
+                }
+        </>
     )
 }
 

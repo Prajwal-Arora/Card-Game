@@ -12,9 +12,9 @@ import RemusWinner from "./RemusWinner";
 import RomulusWinner from "./RomulusWinner";
 import WinnerByInactivity from "./WinnerByInactivity";
 import { apiHandler } from "../../../../services/apiService/axios";
-import { addUserDetail, putLosses, putWins } from "../../../../services/apiService/userServices";
+import { putLosses, putWins } from "../../../../services/apiService/userServices";
 import { useDispatch } from "react-redux";
-import { setScoreRound1, setScoreRound2, setScoreRound3 } from "../../../../store/reducer/userReducer";
+import { setBattleArray, setScoreRound1, setScoreRound2, setScoreRound3 } from "../../../../store/reducer/userReducer";
 
 const GameWinner = () => {
   const path = useLocation();
@@ -48,23 +48,33 @@ const GameWinner = () => {
   }, [path.search]);
 
   useEffect(() => {
-    apiHandler(
-      () =>
-      addUserDetail(battleArray?.player1,battleArray?.player2,battleArray?.xVempLocked,battleArray?.winner_g)
-    );
-    apiHandler(
-      () =>
-        battleArray?.winner_g === walletState.accounts[0]
-          ? putWins(walletState.accounts[0])
-          : putLosses(walletState.accounts[0])
-    );
-  }, []);
+    if ( battleArray?.winner_g && walletState.userName) {
+     
+      apiHandler(
+        () =>
+          battleArray?.winner_g === walletState.userName
+            ? putWins(walletState.userName)
+            : putLosses(walletState.userName)
+      );
+    }
+  }, [battleArray?.winner_g, walletState.userName]);
+
+  window.onbeforeunload = function (evt) {
+    const array = [battleArray["player1"], walletState.userName];
+    socket.emit("clean", JSON.stringify(array));
+    return true
+  }
+
+  window.onload=()=>{
+    history.push('/')
+  }
 
   const handleWinner = () => {
-    const array = [battleArray["player1"], walletState.accounts[0]];
-    dispatch( setScoreRound1({}));
-    dispatch( setScoreRound2({}));
-    dispatch( setScoreRound3({}));
+    const array = [battleArray["player1"], walletState.userName];
+    dispatch(setScoreRound1({}));
+    dispatch(setScoreRound2({}));
+    dispatch(setScoreRound3({}));
+    dispatch(setBattleArray([]));
     socket.emit("clean", JSON.stringify(array));
     history.push("/");
   };
@@ -77,12 +87,10 @@ const GameWinner = () => {
 
   return (
     <>
-      {battleArray.score1 === 0 && battleArray.score2 === 0 ? (
+      {(battleArray.score1 === 0 && battleArray.score2 === 0) || battleArray.length===0  ||  path.state ? (
         <WinnerByInactivity
+          state={path.state}
           playerName={playerName}
-          Round1Score={Round1Score}
-          Round2Score={Round2Score}
-          Round3Score={Round3Score}
         />
       ) : isRemus ? (
         <RemusWinner
@@ -112,8 +120,7 @@ const GameWinner = () => {
         isDraw={false}
         winnerRound={winnerRound}
         round={{ roundP1: 2, roundP2: 2 }}
-        gameWinner={battleArray.winner_g}
-        account={walletState.accounts[0]}
+        account={walletState.userName}
       />
     </>
   );

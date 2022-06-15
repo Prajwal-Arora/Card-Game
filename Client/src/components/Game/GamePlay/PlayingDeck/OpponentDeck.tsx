@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import Slider from "react-slick";
+import { BsInfoLg } from "react-icons/bs";
+import { cardDetailModal } from "../../../../utils/CommonUsedFunction";
 import { settings } from "../../../../utils/config/constant/constant";
 
 const OpponentDeck = ({
@@ -19,11 +21,11 @@ const OpponentDeck = ({
   socket,
   account,
 }: any) => {
-
-  const [animation, setAnimation] = useState(false)
-  const [discardedElement, setDiscardedElement] = useState({})
+  const [animation, setAnimation] = useState(false);
+  const [discardedElement, setDiscardedElement] = useState({});
+  const [showModal, setModal] = useState<any>("");
   const lowest_strength = opponentPlayedDeck
-    .filter(
+    ?.filter(
       (arr: any) => arr.class !== "Utility" && arr.class !== "Status_Effect"
     )
     .map((item: any) => {
@@ -31,25 +33,22 @@ const OpponentDeck = ({
       return arr;
     });
 
-
-    const handleEmitTimeout=(array:any)=>{
-      setDiscardedElement(array[3])
-      setAnimation(true)
-      setSelectedCardDeck(true);
-      setTimeout(() => {
-        
-        setAnimation(false)
-        setPlayedDisabled(false);
-        handleChangeTurnCardEmit(array);
-      },
-      1200)
-    }
+  const handleEmitTimeout = (array: any) => {
+    setDiscardedElement(array[3]);
+    setAnimation(true);
+    setSelectedCardDeck(true);
+    setTimeout(() => {
+      setAnimation(false);
+      setPlayedDisabled(false);
+      handleChangeTurnCardEmit(array);
+    }, 1400);
+  };
 
   const handleOpponentCard = (item: any) => {
     const array = [currentSelectedCard, ownerAccount, account, item];
     playTurnSound();
     if (currentSelectedCard.ability === "Pila") {
-      if (item.strength <= 3 && selectedCardDeck === false) {
+      if (item.strength <= currentSelectedCard.strength && selectedCardDeck === false) {
         handleEmitTimeout(array);
       }
     }
@@ -62,8 +61,9 @@ const OpponentDeck = ({
 
     if (currentSelectedCard.ability === "Ruthless_Tactics") {
       if (selectedCardDeck === false) {
-        
-        handleEmitTimeout(array);
+        setSelectedCardDeck(true);
+        setPlayedDisabled(false);
+        handleChangeTurnCardEmit(array);
       }
     }
     if (currentSelectedCard.ability === "Persuasive_Speech") {
@@ -72,20 +72,17 @@ const OpponentDeck = ({
       }
     }
     if (currentSelectedCard.ability === "Dead_Eye") {
-      if (item.strength <= 6 && selectedCardDeck === false) {
-        
-       
+      if (item.strength <= currentSelectedCard.strength && selectedCardDeck === false) {
         handleEmitTimeout(array);
       }
     }
-
   };
 
   const checkClass = (item: any) => {
     if (playedDisabled === true) {
       if (currentSelectedCard.name === "Javelin") {
         if (
-          item.strength <= 3 &&
+          item.strength <= currentSelectedCard.strength &&
           selectedCardDeck === false &&
           item &&
           item.name !== "Romulus" &&
@@ -99,7 +96,7 @@ const OpponentDeck = ({
       }
       if (currentSelectedCard.name === "Tibia") {
         if (
-          item.strength <= 6 &&
+          item.strength <= currentSelectedCard.strength &&
           selectedCardDeck === false &&
           item.name !== "Romulus" &&
           item.class !== "Utility" &&
@@ -147,13 +144,29 @@ const OpponentDeck = ({
       return false;
     }
   };
+  const handleHover = (items: any) => {
+    setModal(cardDetailModal(items));
+  };
+
+  const handleLeave = () => {
+    setModal("");
+  };
 
   const guardAppliedChange = (items: any, disabled: boolean) => {
     return items.lock === true ? (
       <div className="position-relative">
+        <div
+          className="hover-detail-gplay"
+          style={{ right: '24px' }}
+          onMouseOver={() => handleHover(items)}
+        >
+          <BsInfoLg />
+        </div>
         <img
           width="85%"
-          className={disabled ? "cursor-not-allowed border-style " : "border-style "}
+          className={
+            disabled ? "cursor-not-allowed border-style " : "border-style "
+          }
           onClick={() => (disabled ? "" : handleGuardAppliedCard(items))}
           src={items.battleCard}
           alt="battle-cards"
@@ -168,16 +181,40 @@ const OpponentDeck = ({
         </div>
       </div>
     ) : (
-      <>
+      <div className="position-relative">
+        <div
+          className="hover-detail-gplay"
+          style={{ right: '24px' }}
+          onMouseOver={() => handleHover(items)}
+        >
+          <BsInfoLg />
+        </div>
         <img
           onClick={() => (disabled ? "" : handleOpponentCard(items))}
           width="85%"
-          style={ animation && (discardedElement===items && items.name!== 'Legionnaire') ? { filter: 'blur(0.3px)' } : {}}
-          className={animation && (discardedElement===items && items.name!== 'Legionnaire') ? "animationShake":disabled ? "cursor-not-allowed border-style " : "border-style "}
+          className={
+            animation &&
+              discardedElement === items &&
+              items.ability !== "Ruthless_Tactics"
+              ? "animationShake"
+              : disabled
+                ? "cursor-not-allowed border-style "
+                : "border-style "
+          }
           src={items.battleCard}
           alt="battle-cards"
         />
-      </>
+        {animation && discardedElement === items && (
+          <div>
+            <img
+              width="75%"
+              className="position-absolute top-0 "
+              src={"/images/CrackedOverlay.png"}
+              alt="battle-cards"
+            />
+          </div>
+        )}
+      </div>
     );
   };
 
@@ -185,38 +222,42 @@ const OpponentDeck = ({
     const unlockArr = [ownerAccount, account, item];
     const PGArr = [currentSelectedCard, ownerAccount, account, {}];
     socket.emit("unlock", JSON.stringify(unlockArr));
-    
-    handleChangeTurnCardEmit(PGArr)
+
+    handleChangeTurnCardEmit(PGArr);
     setSelectedCardDeck(true);
     setPlayedDisabled(false);
   };
 
   return (
-    <div className="row justify-content-center">
-      <div
-        style={{
-          width: "70%",
-          margin: "auto",
-          height: "100px",
-          marginTop: "18px",
-        }}
-      >
-        <Slider {...settings}>
-          {opponentPlayedDeck?.map((items: any) => (
-            <>
-              <div key={items.id}>
-                {checkClass(items) &&
-                  selectedCardDeck === false &&
-                  turn === account ? (
-                  <>{guardAppliedChange(items, false)}</>
-                ) : (
-                  <>{guardAppliedChange(items, true)}</>
-                )}
-              </div>
-            </>
-          ))}
-        </Slider>
-      </div>
+    <div onMouseLeave={() => handleLeave()} className="row justify-content-center">
+      {(
+        <div
+          style={{
+            width: "70%",
+            margin: "auto",
+            height: "100px",
+            marginTop: "10px",
+          }}
+        >
+          <Slider {...settings}>
+            {opponentPlayedDeck.length && opponentPlayedDeck?.map((items: any) => (
+              <>
+                <div key={items.id}>
+
+                  {checkClass(items) &&
+                    selectedCardDeck === false &&
+                    turn === account ? (
+                    <>{guardAppliedChange(items, false)}</>
+                  ) : (
+                    <>{guardAppliedChange(items, true)}</>
+                  )}
+                </div>
+              </>
+            ))}
+          </Slider>
+          <div className="gplay-modal">{showModal}</div>
+        </div>
+      )}
     </div>
   );
 };

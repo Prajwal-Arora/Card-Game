@@ -76,26 +76,6 @@
   padding: 10px;
 }
 
-.xVempTxt {
-  background: rgba(12, 12, 12, 0.25);
-  box-shadow: inset 0px 0px 15px #000000;
-  border-radius: 8px;
-  color: #fff;
-  width: 25%;
-  padding: 5px 20px;
-  margin-left: 10px;
-  border: 1px solid #ffd12b;
-}
-
-.dropdown-btn {
-  background: rgba(12, 12, 12, 0.25);
-  box-shadow: inset 0px 0px 15px #000000;
-  border-radius: 8px;
-  color: #474747 !important;
-  text-align: start;
-  width: 100%;
-  border: 1px solid #ffd12b;
-}
 
 .infinite-scroll-style {
   height: 300px;
@@ -136,9 +116,4 @@
   color: #ffd12b;
 }
 
-.inactivity-player {
-  margin-top: 5%;
-  text-align: center;
-  color: white;
-  font-size: 24px;
-}
+

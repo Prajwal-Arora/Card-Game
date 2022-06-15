@@ -6,6 +6,8 @@ import LegionModal from "./LegionModal";
 import RoundModal from "./RoundModal";
 
 const GamePlayModal = ({
+  setRoundShow,
+  roundShow,
   roundModalDraw,
   setIsDraw,
   isDraw,
@@ -24,24 +26,23 @@ const GamePlayModal = ({
   ownerAccount,
   socket,
   account,
-  gameWinner,
   round,
   winnerRound,
 }: any) => {
   const [legionData, setLegionData] = useState<any>();
 
-
   return (
     <>
       <RoundModal
+        setRoundShow={setRoundShow}
+        roundShow={roundShow}
         roundModalDraw={roundModalDraw}
         isDraw={isDraw}
         winnerRound={winnerRound}
         round={round}
-        gameWinner={gameWinner}
         account={account}
       />
-     {openDiscardedPile&& <DiscardedPileModal
+      {openDiscardedPile && <DiscardedPileModal
         legionData={legionData}
         discardedPile={discardedPile}
         currentSelectedCard={currentSelectedCard}
@@ -51,7 +52,7 @@ const GamePlayModal = ({
         ownerAccount={ownerAccount}
         account={account}
       />}
-     {openLegion&& <LegionModal
+      {(openLegion || isDraw) && <LegionModal
         socket={socket}
         setIsDraw={setIsDraw}
         isDraw={isDraw}
@@ -65,7 +66,8 @@ const GamePlayModal = ({
         setOpenLegion={setOpenLegion}
         openLegion={openLegion}
       />}
-      {openExploratoryModal&&<EmploratorsModal
+      {openExploratoryModal && <EmploratorsModal
+        socket={socket}
         currentSelectedCard={currentSelectedCard}
         account={account}
         handleChangeTurnCardEmit={handleChangeTurnCardEmit}

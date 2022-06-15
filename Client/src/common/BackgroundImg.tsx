@@ -6,8 +6,7 @@ import { useAppSelector, useAppDispatch } from "../store/store";
 // react icons
 import { IoMdMusicalNotes } from "react-icons/io"
 import { setBackgroundMusic, setVolume } from "../store/reducer/soundReducer";
-import "./backgroundImg.css"
-
+import "./common.css"
 const battleMusic = require("../assets/Sounds/battles-musics.mp3");
 const MenuMusic = require("../assets/Sounds/menu-musics.mp3");
 
@@ -15,28 +14,35 @@ const MenuMusic = require("../assets/Sounds/menu-musics.mp3");
 // const MenuMusic2 = require("../assets/Sounds/2016-08-23_-_News_Opening_5_-_David_Fesliyan.mp3");
 
 const BackgroundVideo = () => {
-  const { backgroundMusic , volume } = useAppSelector((state) => state.sounds);
+  const { backgroundMusic, volume } = useAppSelector((state) => state.sounds);
 
   const [playMenuMusic, { pause: pauseMenuMusic }] = useSound(MenuMusic.default, { loop: true, volume: volume })
   const [playBattleMusic, { pause: pauseBattleMusic }] = useSound(battleMusic.default, { loop: true, volume: volume });
 
   const path = useLocation();
-  // const location = path.pathname.split("?")[0];
+
+  const location = path.pathname.split("?")[0];
 
   const dispatch = useAppDispatch()
   const volumeChange = (event: any) => {
     dispatch(setVolume(event.target.valueAsNumber))
   }
 
+  // useEffect(() => {
+  //   ReactGA.initialize('UA-223754734',{ debug: true })
+  //   ReactGA.set({page:path.pathname})
+  //   ReactGA.pageview(path.pathname)
+  // }, [path.pathname])
+
   const onGamePlay = path.pathname.includes("game-play");
-  const onVictoryScreen= path.pathname.includes("game-winner")
+  const onVictoryScreen = path.pathname.includes("game-winner")
   const [isRemus, setIsRemus] = useState<any>(false);
   const [isRomulus, setIsRomulus] = useState<any>(false);
   const [isRomulusVictory, setIsRomulusVictory] = useState<any>(false);
   const [isRemusVictory, setIsRemusVictory] = useState<any>(false);
 
-
   useEffect(() => {
+
     if (path.search === "?Romulus" && onGamePlay === false) {
       pauseMenuMusic();
       pauseBattleMusic();
@@ -63,7 +69,7 @@ const BackgroundVideo = () => {
       pauseBattleMusic()
       backgroundMusic ? playBattleMusic() : pauseBattleMusic()
       setIsRomulus(false);
-      setIsRemus(false); 
+      setIsRemus(false);
       setIsRomulusVictory(false)
       setIsRemusVictory(false)
     }
@@ -76,19 +82,19 @@ const BackgroundVideo = () => {
       setIsRomulusVictory(false)
       setIsRemusVictory(false)
     }
-    if( path.search === "?Remus" && onVictoryScreen === true){
+    if (path.search === "?Remus" && onVictoryScreen === true) {
       setIsRomulus(false);
       setIsRemus(false);
       setIsRomulusVictory(false)
       setIsRemusVictory(true)
     }
-    if( path.search === "?Romulus" && onVictoryScreen === true){
+    if (path.search === "?Romulus" && onVictoryScreen === true) {
       setIsRomulus(false);
       setIsRemus(false);
       setIsRomulusVictory(true)
       setIsRemusVictory(false)
     }
-  }, [path.search, onGamePlay, playMenuMusic,backgroundMusic, pauseMenuMusic, pauseBattleMusic, playBattleMusic, onVictoryScreen]);
+  }, [path.search, onGamePlay, playMenuMusic, backgroundMusic, pauseMenuMusic, pauseBattleMusic, playBattleMusic, onVictoryScreen]);
 
   const playBackgroundMusic = () => {
     dispatch(setBackgroundMusic(!backgroundMusic));
@@ -119,22 +125,22 @@ const BackgroundVideo = () => {
               ) : (
                 <>
                   {
-                    isRemusVictory? (
+                    isRemusVictory ? (
                       <img id="background-img" src="https://playassets.s3.eu-west-1.amazonaws.com/Victory_Remus.jpg" alt="" />
-                    ):(
+                    ) : (
                       <>
                         {
-                           isRomulusVictory ? (
+                          isRomulusVictory ? (
                             <img id="background-img" src="https://playassets.s3.eu-west-1.amazonaws.com/Victory_Romulus.jpg" alt="" />
-                          ):(
-                            <img id="background-img" src="https://playassets.s3.eu-west-1.amazonaws.com/Main_Menu.jpg" alt="" /> 
+                          ) : (
+                            <img id="background-img" src="https://playassets.s3.eu-west-1.amazonaws.com/Main_Menu.jpg" alt="" />
                           )
                         }
                       </>
                     )
                   }
                 </>
-                
+
               )}
             </>
           )}

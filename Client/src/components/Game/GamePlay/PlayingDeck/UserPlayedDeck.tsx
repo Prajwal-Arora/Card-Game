@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
+import Slider from "react-slick";
+import "../index.css";
+import { settings } from "../../../../utils/config/constant/constant";
+import "./stackedCard.css";
+import { cardDetailModal } from "../../../../utils/CommonUsedFunction";
+import { getLocalStore } from "../../../../common/localStorage";
 
 const UserPlayedDeck = ({
   playTurnSound,
@@ -14,6 +20,8 @@ const UserPlayedDeck = ({
   socket,
   account,
 }: any) => {
+  const [showModal, setModal] = useState<any>("");
+
   const handlePlayedDeck = (item: any) => {
     playTurnSound();
     const arr = [currentSelectedCard, ownerAccount, account, item];
@@ -29,31 +37,29 @@ const UserPlayedDeck = ({
       setSelectedCardDeck(true);
     }
   };
-  // const checkClass = (item: any) => {
-  //     if (currentSelectedCard.ability === "Man_of_the_People") {
-  //         if (item.strength === lowest_strength && selectedCardDeck === false) {
-  //             return true
-  //         }
-  //         else {
-  //             return false
-  //         }
-  //     }
-  // }
 
 
-  const guardAppliedChange = (items: any) => {
-    return items.lock === true ? (
-      <div className="position-relative">
+  const handleHover = (item: any) => {
+    setModal(cardDetailModal(item));
+  };
+
+  const handleLeave = () => {
+    setModal("");
+  };
+
+  const guardAppliedChange = (item: any) => {
+    return item.lock === true ? (
+      <div className="position-relative Stackcard">
         <img
-          width="70%"
-          onClick={() => handlePlayedDeck(items)}
+          width="85%"
+          onClick={() => handlePlayedDeck(item)}
           className={
             currentSelectedCard.name === "Consul" ||
-            currentSelectedCard.name === "Praetorian_Guard"
-              ? "border-style"
-              : "border-style-not-allowed"
+              currentSelectedCard.name === "Praetorian_Guard"
+              ? "border-style Stackcard"
+              : "border-style-not-allowed Stackcard"
           }
-          src={items.battleCard}
+          src={item.battleCard}
           alt="battle-cards"
         />
         <div>
@@ -67,62 +73,84 @@ const UserPlayedDeck = ({
       </div>
     ) : (
       <img
-        width="70%"
-        onClick={() => handlePlayedDeck(items)}
+        width="85%"
+        onClick={() => handlePlayedDeck(item)}
         className={
           currentSelectedCard.name === "Consul" ||
-          currentSelectedCard.name === "Praetorian_Guard"
-            ? "border-style"
-            : "border-style-not-allowed"
+            currentSelectedCard.name === "Praetorian_Guard"
+            ? "border-style Stackcard"
+            : "border-style-not-allowed Stackcard"
         }
-        src={items.battleCard}
+        src={item.battleCard}
         alt="battle-cards"
       />
     );
   };
 
   return (
-    <div className="row show-card">
-      {playedDeck?.map((items: any) => (
-        <div
-          style={{ marginTop: "-6%" }}
-          key={items.id}
-          className={"card-row-selected "}
-        >
-          {turn === account && selectedCardDeck === false ? (
-            <>{guardAppliedChange(items)}</>
-          ) : (
-            <>
-              {items.lock === true ? (
-                <div className="position-relative">
-                  <img
-                    width="70%"
-                    className={"border-style-not-allowed"}
-                    src={items.battleCard}
-                    alt="battle-cards"
-                  />
-                  <div>
-                    <img
-                      width="40%"
-                      className="position-absolute top-0"
-                      src={"/images/lock-image.png"}
-                      alt="battle-cards"
-                    />
-                  </div>
+    <>
+      {(
+        <div className="row show-card show-user">
+          {playedDeck.length &&<Slider {...settings}>
+            {playedDeck.length&& playedDeck?.map((items: any) => (
+              <div
+                style={{ marginTop: "-6%" }}
+                // key={items.id}
+                onMouseLeave={() => handleLeave()}
+                className={"card-row-selected "}
+              >
+                <div className="StackCard-list">
+                  {items &&
+                    items?.map((item: any) =>
+                      turn === account && selectedCardDeck === false ? (
+                        <>{guardAppliedChange(item)}</>
+                      ) : (
+                        <>
+                          {item.lock === true ? (
+                            <div className="position-relative Stackcard">
+                              <img
+                                width="85%"
+                                className={"border-style-not-allowed Stackcard"}
+                                src={item.battleCard}
+                                alt="battle-cards"
+                              />
+                              <div>
+                                <img
+                                  width="40%"
+                                  className="position-absolute top-0"
+                                  src={"/images/lock-image.png"}
+                                  alt="battle-cards"
+                                />
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="position-relative Stackcard">
+                                <img
+                                  width="85%"
+                                  className={
+                                    "border-style-not-allowed Stackcard"
+                                  }
+                                  src={item.battleCard}
+                                  alt="battle-cards"
+                                />
+                                {/* <div onMouseOver={() => handleHover(items)}>
+                                  i
+                                </div> */}
+                              </div>
+                            </>
+                          )}
+                        </>
+                      )
+                    )}
                 </div>
-              ) : (
-                <img
-                  width="70%"
-                  className={"border-style-not-allowed"}
-                  src={items.battleCard}
-                  alt="battle-cards"
-                />
-              )}
-            </>
-          )}
+              </div>
+            ))}
+          </Slider>}
+          <div className="gplay-modal">{showModal}</div>
         </div>
-      ))}
-    </div>
+      )}
+    </>
   );
 };
 

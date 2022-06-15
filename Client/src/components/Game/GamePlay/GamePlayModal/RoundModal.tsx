@@ -12,23 +12,21 @@ interface RoundProps {
   isDraw?: any;
   socket?: any;
   account?: any;
-  gameWinner?: any;
   round?: any;
   winnerRound?: any;
+  roundShow?:any;
+  setRoundShow?:any;
 }
 
 const RoundModal: React.FC<RoundProps> = ({
   roundModalDraw,
-  isDraw,
-  socket,
-  account,
-  gameWinner,
+  setRoundShow,
+  roundShow,
   round,
   winnerRound,
 }) => {
   const battleArray = useBattleDetail();
   const walletState: any = useWalletDetail();
-  const [show, setShow] = useState(false);
   const [currentRound, setCurrentRound] = useState(1);
   const [sudisPresentP1, setSudisPresentP1] = useState(false)
   const [sudisPresentP2, setSudisPresentP2] = useState(false)
@@ -36,7 +34,7 @@ const RoundModal: React.FC<RoundProps> = ({
   // const dispatch = useDispatch();
 
   const handleNextRound = () => {
-    setShow(false);
+    setRoundShow(false);
   };
 
   const checkRound = () => {
@@ -54,7 +52,7 @@ const RoundModal: React.FC<RoundProps> = ({
     if (battleArray.sudisFlag2 === 1) {
       setSudisPresentP2(true)
     }
-    if (battleArray.player1 === walletState?.accounts[0]) {
+    if (battleArray.player1 === walletState?.userName) {
       if (battleArray.sudisFlag1 === 0 && sudisPresentP1) {
         toast("card was discarded by sudis")
         setSudisPresentP1(false)
@@ -64,7 +62,7 @@ const RoundModal: React.FC<RoundProps> = ({
         setSudisPresentP2(false)
       }
     }
-    if (battleArray.player2 === walletState.accounts[0]) {
+    if (battleArray.player2 === walletState.userName) {
 
       if (battleArray.sudisFlag2 === 0 && sudisPresentP2) {
         toast("card was discarded by sudis")
@@ -123,24 +121,18 @@ const RoundModal: React.FC<RoundProps> = ({
 
   useEffect(() => {
     checkRound();
-    if (
-      round.roundP1 === round.roundP2 &&
-      round.roundP1 !== 1 &&
-      round.roundP2 !== 1
-    ) {
-      setShow(true);
-    }
+   
   }, [round.roundP1, round.roundP2]);
 
   return (
     <div className="waiting-opponent">
-      <Modal onHide={handleNextRound} show={show && battleArray.winner_g === '' && roundModalDraw === false}>
+      <Modal onHide={handleNextRound} show={roundShow && battleArray.winner_g === '' && roundModalDraw === false}>
         <Modal.Body className="modal-bg winner-modal">
           <div
             className="text-center"
             style={{ fontSize: "24px", color: "yellow" }}
           >
-            {gameWinner === "" ? (
+            {battleArray.winner_g === "" ? (
               <div className="d-flex justify-between">
                 <p style={{ marginLeft: "120px", marginRight: "20px" }}>
                   {" Round " + currentRound + " - " + roundWinTeam + " wins "}
@@ -164,9 +156,6 @@ const RoundModal: React.FC<RoundProps> = ({
           >
             <div className="d-flex align-items-center position-relative">
               <div>Continue</div>
-              {/* <div className="position-absolute right-arrow-position">
-                            <img src="/images/right-arrow.png" alt="" className="w-50" />
-                        </div> */}
             </div>
           </button>
         </Modal.Body>
