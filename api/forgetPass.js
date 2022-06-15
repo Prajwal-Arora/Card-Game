@@ -34,7 +34,7 @@ router.post("/", async (req, res, next) => {
         }));
         
         var mailOptions = {
-            from: 'prajwal.arora@oodles.io',
+            from: '<enter-same-emailId-as-above>',
             to: email,
             subject: 'Reset Password Link',
             html: `'<p>You requested for reset password, kindly use this <a href="http://localhost:3000/reset-password?${token}">link</a> to reset your password</p>'`
