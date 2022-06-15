@@ -1,1 +1,1 @@
-Game link - https://play.v-empire.io/
+Game link - https://freeplay.v-empire.io
